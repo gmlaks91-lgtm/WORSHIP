@@ -15,7 +15,7 @@ export default async function TeamPage() {
         <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Ahaba</p>
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">팀 라인업</h1>
         <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
-          전체 팀원의 역할 우선순위를 한눈에 확인하세요.
+          전체 팀원의 포지션을 한눈에 확인하세요.
         </p>
       </header>
 
@@ -32,12 +32,24 @@ export default async function TeamPage() {
               <CardTitle className="text-base">{member.username}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
+              {(() => {
+                const roleText = [
+                  member.role_priority_1 ? teamRoleLabel(member.role_priority_1) : null,
+                  member.role_priority_2 ? teamRoleLabel(member.role_priority_2) : null,
+                  member.role_priority_3 ? teamRoleLabel(member.role_priority_3) : null,
+                ]
+                  .filter(Boolean)
+                  .join(" / ");
+
+                return (
+                  <>
               <p>
                 <span className="text-muted-foreground">권한</span> · {member.role === "leader" ? "리더" : "팀원"}
               </p>
-              <p><span className="text-muted-foreground">1순위</span> · {teamRoleLabel(member.role_priority_1)}</p>
-              <p><span className="text-muted-foreground">2순위</span> · {teamRoleLabel(member.role_priority_2)}</p>
-              <p><span className="text-muted-foreground">3순위</span> · {teamRoleLabel(member.role_priority_3)}</p>
+              <p><span className="text-muted-foreground">포지션</span> · {roleText || "미정"}</p>
+                  </>
+                );
+              })()}
             </CardContent>
           </Card>
         ))}

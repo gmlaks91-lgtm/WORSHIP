@@ -48,10 +48,7 @@ export default async function SmartSetlistDashboardPage() {
     <div className="flex flex-1 flex-col gap-10">
       <section className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Ahaba</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">스마트 송리스트</h1>
-        <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
-          예습 콘티, 라인업 배정, 악보를 한곳에서 관리하세요.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">이 주의 콘티</h1>
       </section>
 
       <PersonalDashboard data={dashboardData} />

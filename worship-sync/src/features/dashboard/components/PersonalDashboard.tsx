@@ -153,7 +153,7 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <ListMusic className="size-4 text-muted-foreground" aria-hidden />
-                <CardTitle className="text-base font-semibold">최근 예습 콘티</CardTitle>
+                <CardTitle className="text-base font-semibold">최근 이 주의 콘티</CardTitle>
               </div>
               <CardDescription>prep 상태 콘티가 최신 순으로 표시됩니다.</CardDescription>
             </CardHeader>

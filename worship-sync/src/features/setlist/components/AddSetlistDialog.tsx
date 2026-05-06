@@ -168,7 +168,7 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
       >
         <div className="border-b border-border/60 px-4 py-4 sm:px-5">
           <DialogHeader className="gap-1">
-            <DialogTitle className="text-lg">예습 콘티 추가</DialogTitle>
+            <DialogTitle className="text-lg">이 주의 콘티 추가</DialogTitle>
             <DialogDescription>곡과 라인업을 함께 저장합니다.</DialogDescription>
           </DialogHeader>
         </div>
@@ -180,7 +180,7 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
                 <FieldLabel htmlFor="setlist-title">콘티 제목</FieldLabel>
                 <Input
                   id="setlist-title"
-                  placeholder="예: 5월 둘째 주 예습"
+                  placeholder="예: 5월 둘째 주 주일예배"
                   autoComplete="off"
                   aria-invalid={!!form.formState.errors.title}
                   {...form.register("title")}

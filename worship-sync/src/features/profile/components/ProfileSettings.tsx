@@ -18,6 +18,13 @@ function roleLabel(role: "leader" | "member") {
   return role === "leader" ? "리더" : "팀원";
 }
 
+function formatRolePriorities(...roles: Array<string | null | undefined>) {
+  return roles
+    .map((role) => (role ? teamRoleLabel(role as Parameters<typeof teamRoleLabel>[0]) : null))
+    .filter(Boolean)
+    .join(" / ");
+}
+
 export function ProfileSettings({ profile }: { profile: MyProfileRow }) {
   const router = useRouter();
   const [openEdit, setOpenEdit] = useState(false);
@@ -28,6 +35,7 @@ export function ProfileSettings({ profile }: { profile: MyProfileRow }) {
   const [pendingSave, startSaveTransition] = useTransition();
   const [pendingAvatar, startAvatarTransition] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
+  const roleText = formatRolePriorities(profile.role_priority_1, profile.role_priority_2, profile.role_priority_3);
 
   const onSaveProfile = () => {
     const next = username.trim();
@@ -90,27 +98,27 @@ export function ProfileSettings({ profile }: { profile: MyProfileRow }) {
         <div className="flex flex-1 flex-col gap-2 text-center sm:text-left">
           <p className="text-lg font-semibold tracking-tight">{profile.username}</p>
           <p className="text-sm text-muted-foreground">권한: <span className="font-medium text-foreground">{roleLabel(profile.role)}</span></p>
-          <p className="text-sm text-muted-foreground">역할: {teamRoleLabel(profile.role_priority_1)} / {teamRoleLabel(profile.role_priority_2)} / {teamRoleLabel(profile.role_priority_3)}</p>
+          <p className="text-sm text-muted-foreground">포지션: {roleText || "미정"}</p>
           <p className="text-xs text-muted-foreground">프로필 이미지를 눌러 PNG/JPG/WebP/GIF를 업로드할 수 있습니다. (최대 5MB)</p>
         </div>
       </section>
 
       <section className="space-y-4 rounded-lg border border-border/60 bg-card/70 p-5 shadow-sm sm:p-6">
         <h2 className="text-sm font-medium text-foreground">프로필 수정</h2>
-        <p className="text-xs text-muted-foreground">표시 이름과 역할 우선순위를 수정할 수 있습니다.</p>
+        <p className="text-xs text-muted-foreground">표시 이름과 포지션을 수정할 수 있습니다.</p>
         <Dialog open={openEdit} onOpenChange={setOpenEdit}>
           <DialogTrigger render={<Button type="button" variant="outline" className="w-full sm:w-auto" />}>프로필 열기</DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>프로필 수정</DialogTitle>
-              <DialogDescription>내 이름과 역할 1/2/3순위를 설정합니다.</DialogDescription>
+              <DialogDescription>내 이름과 포지션을 설정합니다.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-1.5">
                 <label htmlFor="profile-username" className="text-xs font-medium text-muted-foreground">이름</label>
                 <Input id="profile-username" value={username} onChange={(e) => setUsername(e.target.value)} disabled={pendingSave} maxLength={80} />
               </div>
-              {[{ v: role1, s: setRole1, l: "역할 1순위" }, { v: role2, s: setRole2, l: "역할 2순위" }, { v: role3, s: setRole3, l: "역할 3순위" }].map((item) => (
+              {[{ v: role1, s: setRole1, l: "포지션 선택 A" }, { v: role2, s: setRole2, l: "포지션 선택 B" }, { v: role3, s: setRole3, l: "포지션 선택 C" }].map((item) => (
                 <div className="space-y-1.5" key={item.l}>
                   <label className="text-xs font-medium text-muted-foreground">{item.l}</label>
                   <select value={item.v} onChange={(e) => item.s(e.target.value)} className={cn("h-10 w-full rounded-lg border border-input bg-background px-3 text-sm", "outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40")}>

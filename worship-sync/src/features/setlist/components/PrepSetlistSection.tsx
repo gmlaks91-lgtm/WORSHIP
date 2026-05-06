@@ -175,7 +175,7 @@ export function PrepSetlistSection({
       <section id="prep-setlists" className="scroll-mt-8 rounded-lg border border-border/80 bg-card p-6 shadow-sm sm:p-7">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-sm font-medium text-foreground">예습 콘티</h2>
+            <h2 className="text-sm font-medium text-foreground">이 주의 콘티</h2>
             <p className="text-xs text-muted-foreground">prep 상태 콘티와 수록곡을 확인하세요.</p>
           </div>
           {canManageSetlists ? (
@@ -196,7 +196,7 @@ export function PrepSetlistSection({
 
         {!hasLists && !error ? (
           <div className="mt-6 flex min-h-[160px] items-center justify-center rounded-lg border border-dashed border-border/90 bg-muted/30 px-5 py-10 text-center text-sm text-muted-foreground">
-            아직 예습 콘티가 없습니다.
+            아직 이 주의 콘티가 없습니다.
           </div>
         ) : null}
 
