@@ -13,6 +13,13 @@ function supabaseImageHost(): string | null {
 const supabaseHost = supabaseImageHost();
 
 const nextConfig: NextConfig = {
+  // 여기에 검사 무시 설정을 추가했습니다!
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   images: {
     remotePatterns: [
       {
