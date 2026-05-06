@@ -99,6 +99,8 @@ export function ProfileSettings({ profile }: { profile: MyProfileRow }) {
           <p className="text-lg font-semibold tracking-tight">{profile.username}</p>
           <p className="text-sm text-muted-foreground">권한: <span className="font-medium text-foreground">{roleLabel(profile.role)}</span></p>
           <p className="text-sm text-muted-foreground">포지션: {roleText || "미정"}</p>
+          <p className="text-sm text-muted-foreground">포인트: <span className="font-medium text-foreground">{profile.points}P</span></p>
+          {profile.active_badge ? <p className="text-sm text-muted-foreground">적용 뱃지: <span className="font-medium text-foreground">{profile.active_badge}</span></p> : null}
           <p className="text-xs text-muted-foreground">프로필 이미지를 눌러 PNG/JPG/WebP/GIF를 업로드할 수 있습니다. (최대 5MB)</p>
         </div>
       </section>

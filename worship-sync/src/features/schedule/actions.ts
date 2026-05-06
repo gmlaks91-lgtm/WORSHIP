@@ -7,11 +7,12 @@ import { requireLeader } from "@/lib/require-leader";
 import { createClient } from "@/utils/supabase/server";
 
 const scheduleKindSchema = z.enum(["practice", "worship", "social"]);
-const scheduleAttendanceStatusSchema = z.enum(["attending", "absent", "pending"]);
+const scheduleAttendanceStatusSchema = z.enum(["attending", "absent"]);
 
 const setAttendanceSchema = z.object({
   scheduleId: z.string().uuid(),
   status: scheduleAttendanceStatusSchema,
+  reason: z.string().trim().max(500).optional(),
 });
 
 const createScheduleSchema = z.object({
@@ -34,7 +35,10 @@ export async function setScheduleAttendance(
     return { ok: false, message: "입력값을 확인하세요." };
   }
 
-  const { scheduleId, status } = parsed.data;
+  const { scheduleId, status, reason } = parsed.data;
+  if (status === "absent" && !reason?.trim()) {
+    return { ok: false, message: "불참 사유를 입력해 주세요." };
+  }
 
   try {
     const supabase = await createClient();
@@ -51,6 +55,7 @@ export async function setScheduleAttendance(
         schedule_id: scheduleId,
         user_id: user.id,
         status,
+        reason: status === "absent" ? reason?.trim() ?? null : null,
       },
       { onConflict: "schedule_id,user_id" },
     );

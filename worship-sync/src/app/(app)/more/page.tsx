@@ -39,6 +39,8 @@ export default async function MorePage() {
 
       <footer className="flex flex-wrap items-center gap-3 border-t border-border/50 pt-6">
         <Link href="/team" className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}>팀 라인업</Link>
+        <Link href="/faith" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>신앙 점검표</Link>
+        <Link href="/shop" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>포인트 상점</Link>
         <Link href="/" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>홈으로</Link>
       </footer>
     </div>

@@ -17,8 +17,7 @@ export default async function SchedulePage() {
           일정 · 참석
         </h1>
         <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
-          다가오는 연습·예배·모임 일정을 확인하고, 참석·불참·미정을 팀과 공유하세요. 일정 추가와 삭제는
-          리더만 할 수 있습니다.
+          캘린더에서 일정을 확인하고 참석 여부를 공유하세요. 일정 추가와 삭제는 리더만 할 수 있습니다.
         </p>
       </header>
 

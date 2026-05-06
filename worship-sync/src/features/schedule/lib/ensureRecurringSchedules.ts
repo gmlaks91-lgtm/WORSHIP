@@ -13,8 +13,8 @@ type RecurringTemplate = {
 };
 
 const RECURRING_TEMPLATES: RecurringTemplate[] = [
-  { title: "토요일 연습", kind: "practice", weekday: 6, hour: 18, minute: 0 },
-  { title: "주일 예배", kind: "worship", weekday: 0, hour: 9, minute: 0 },
+  { title: "토요일 연습", kind: "practice", weekday: 6, hour: 15, minute: 30 },
+  { title: "주일 예배", kind: "worship", weekday: 0, hour: 13, minute: 15 },
 ];
 
 const UPCOMING_WEEKS = 8;

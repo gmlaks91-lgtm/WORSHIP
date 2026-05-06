@@ -17,8 +17,10 @@ export type SetlistStatus = "prep" | "confirmed";
 export type AttendanceStatus = "attending" | "late" | "absent";
 export type AttendanceEventType = "practice" | "worship";
 export type ScheduleKind = "practice" | "worship" | "social";
-export type ScheduleAttendanceStatus = "attending" | "absent" | "pending";
+export type ScheduleAttendanceStatus = "attending" | "absent";
 export type PostCategory = "prayer" | "feedback" | "general";
+export type FaithCheckType = "qt" | "prayer" | "bible";
+export type ShopItemType = "border" | "badge" | "background";
 
 export type Database = {
   public: {
@@ -33,6 +35,10 @@ export type Database = {
           role_priority_1: TeamRoleCode | null;
           role_priority_2: TeamRoleCode | null;
           role_priority_3: TeamRoleCode | null;
+          points: number;
+          active_badge: string | null;
+          active_border_color: string | null;
+          active_background_color: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -45,6 +51,10 @@ export type Database = {
           role_priority_1?: TeamRoleCode | null;
           role_priority_2?: TeamRoleCode | null;
           role_priority_3?: TeamRoleCode | null;
+          points?: number;
+          active_badge?: string | null;
+          active_border_color?: string | null;
+          active_background_color?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -57,6 +67,10 @@ export type Database = {
           role_priority_1?: TeamRoleCode | null;
           role_priority_2?: TeamRoleCode | null;
           role_priority_3?: TeamRoleCode | null;
+          points?: number;
+          active_badge?: string | null;
+          active_border_color?: string | null;
+          active_background_color?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -257,6 +271,7 @@ export type Database = {
           schedule_id: string;
           user_id: string;
           status: ScheduleAttendanceStatus;
+          reason: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -265,6 +280,7 @@ export type Database = {
           schedule_id: string;
           user_id: string;
           status: ScheduleAttendanceStatus;
+          reason?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -273,6 +289,7 @@ export type Database = {
           schedule_id?: string;
           user_id?: string;
           status?: ScheduleAttendanceStatus;
+          reason?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -282,6 +299,7 @@ export type Database = {
         Row: {
           id: boolean;
           playlist_id: string | null;
+          last_worship_video_url: string | null;
           updated_by: string | null;
           created_at: string;
           updated_at: string;
@@ -289,6 +307,7 @@ export type Database = {
         Insert: {
           id?: boolean;
           playlist_id?: string | null;
+          last_worship_video_url?: string | null;
           updated_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -296,9 +315,94 @@ export type Database = {
         Update: {
           id?: boolean;
           playlist_id?: string | null;
+          last_worship_video_url?: string | null;
           updated_by?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      faith_checks: {
+        Row: {
+          id: string;
+          user_id: string;
+          check_date: string;
+          check_type: FaithCheckType;
+          points_earned: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          check_date: string;
+          check_type: FaithCheckType;
+          points_earned?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          check_date?: string;
+          check_type?: FaithCheckType;
+          points_earned?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      shop_items: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          item_type: ShopItemType;
+          value: string;
+          price_points: number;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string | null;
+          item_type: ShopItemType;
+          value: string;
+          price_points: number;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          description?: string | null;
+          item_type?: ShopItemType;
+          value?: string;
+          price_points?: number;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      user_inventory: {
+        Row: {
+          id: string;
+          user_id: string;
+          shop_item_id: string;
+          is_applied: boolean;
+          acquired_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          shop_item_id: string;
+          is_applied?: boolean;
+          acquired_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          shop_item_id?: string;
+          is_applied?: boolean;
+          acquired_at?: string;
         };
         Relationships: [];
       };

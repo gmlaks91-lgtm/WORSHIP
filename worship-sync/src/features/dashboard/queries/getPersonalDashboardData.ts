@@ -4,6 +4,7 @@ import { ensureRecurringSchedules } from "@/features/schedule/lib/ensureRecurrin
 import { getSetlists, type PrepSetlistRow } from "@/features/setlist/queries/getSetlists";
 import { getRecentSheetsForDashboard } from "@/features/sheets/queries/getSheets";
 import { youtubePlaylistEmbedUrl } from "@/features/team-settings/lib/youtube-playlist";
+import { extractYouTubeVideoId, youtubeVideoEmbedUrl } from "@/features/team-settings/lib/youtube-video";
 import type { ScheduleAttendanceStatus, ScheduleKind } from "@/types/database";
 import { createClient } from "@/utils/supabase/server";
 
@@ -21,6 +22,8 @@ export type PersonalDashboardData = {
   }>;
   recentSetlists: PrepSetlistRow[];
   recentSheets: Awaited<ReturnType<typeof getRecentSheetsForDashboard>>;
+  lastWorshipVideoUrl: string | null;
+  lastWorshipVideoEmbedUrl: string | null;
   teamPlaylistId: string | null;
   teamPlaylistEmbedUrl: string | null;
   canManageTeamPlaylist: boolean;
@@ -50,12 +53,17 @@ export async function getPersonalDashboardData(): Promise<PersonalDashboardData>
 
   if (setlistErr) errors.push(setlistErr);
   let teamPlaylistId: string | null = null;
+  let lastWorshipVideoUrl: string | null = null;
 
   if (user) {
     const [{ data: profile, error: profileError }, { data: teamSettings, error: settingsError }] =
       await Promise.all([
         supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
-        supabase.from("team_settings").select("playlist_id").eq("id", true).maybeSingle(),
+        supabase
+          .from("team_settings")
+          .select("playlist_id, last_worship_video_url")
+          .eq("id", true)
+          .maybeSingle(),
       ]);
 
     if (profileError) errors.push(profileError.message);
@@ -63,6 +71,7 @@ export async function getPersonalDashboardData(): Promise<PersonalDashboardData>
 
     canManageTeamPlaylist = profile?.role === "leader";
     teamPlaylistId = teamSettings?.playlist_id ?? null;
+    lastWorshipVideoUrl = teamSettings?.last_worship_video_url ?? null;
   }
 
   let upcomingWithMine: PersonalDashboardData["upcomingWithMine"] = [];
@@ -109,6 +118,13 @@ export async function getPersonalDashboardData(): Promise<PersonalDashboardData>
     upcomingWithMine,
     recentSetlists: setlists,
     recentSheets: sheets,
+    lastWorshipVideoUrl,
+    lastWorshipVideoEmbedUrl: lastWorshipVideoUrl
+      ? (() => {
+          const id = extractYouTubeVideoId(lastWorshipVideoUrl);
+          return id ? youtubeVideoEmbedUrl(id) : null;
+        })()
+      : null,
     teamPlaylistId,
     teamPlaylistEmbedUrl: teamPlaylistId ? youtubePlaylistEmbedUrl(teamPlaylistId) : null,
     canManageTeamPlaylist,

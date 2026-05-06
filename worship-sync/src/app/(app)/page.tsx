@@ -1,6 +1,7 @@
 ﻿import { PersonalDashboard } from "@/features/dashboard/components/PersonalDashboard";
 import { getPersonalDashboardData } from "@/features/dashboard/queries/getPersonalDashboardData";
 import { PrepSetlistSection } from "@/features/setlist/components/PrepSetlistSection";
+import { LastWorshipVideoSection } from "@/features/team-settings/components/LastWorshipVideoSection";
 import { getSetlists } from "@/features/setlist/queries/getSetlists";
 import type { PrepSetlistWithSheets } from "@/features/setlist/types";
 import type { TeamMemberRow } from "@/features/team/queries/getTeamMembers";
@@ -46,6 +47,12 @@ export default async function SmartSetlistDashboardPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-10">
+      <LastWorshipVideoSection
+        videoUrl={dashboardData.lastWorshipVideoUrl}
+        embedUrl={dashboardData.lastWorshipVideoEmbedUrl}
+        canEdit={dashboardData.canManageTeamPlaylist}
+      />
+
       <section className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Ahaba</p>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">이 주의 콘티</h1>

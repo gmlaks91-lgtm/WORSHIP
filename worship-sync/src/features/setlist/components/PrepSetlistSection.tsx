@@ -176,7 +176,6 @@ export function PrepSetlistSection({
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-sm font-medium text-foreground">이 주의 콘티</h2>
-            <p className="text-xs text-muted-foreground">prep 상태 콘티와 수록곡을 확인하세요.</p>
           </div>
           {canManageSetlists ? (
             <AddSetlistTriggerButton

@@ -57,7 +57,6 @@ function formatShortWhen(iso: string) {
 function myStatusLabel(status: ScheduleAttendanceStatus | null) {
   if (status === "attending") return { text: "참석", className: "border-emerald-500/40 bg-emerald-500/10" };
   if (status === "absent") return { text: "불참", className: "border-red-500/40 bg-red-500/10" };
-  if (status === "pending") return { text: "미정", className: "border-amber-500/40 bg-amber-500/10" };
   return { text: "응답 전", className: "border-border/80 bg-muted/40" };
 }
 
@@ -71,10 +70,7 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
           <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             내 요약
           </p>
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">오늘의 팀 한눈에</h2>
-          <p className="text-xs text-muted-foreground">
-            다가오는 일정 응답과 최근 콘티·악보를 모았습니다.
-          </p>
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">대시보드</h2>
         </div>
         <Link
           href="/schedule"
@@ -101,7 +97,7 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
               <CalendarRange className="size-4 text-muted-foreground" aria-hidden />
               <CardTitle className="text-base font-semibold">다가오는 일정 · 내 응답</CardTitle>
             </div>
-            <CardDescription>참석·불참·미정을 빠르게 확인하세요.</CardDescription>
+              <CardDescription>참석·불참 상태를 빠르게 확인하세요.</CardDescription>
           </CardHeader>
             <CardContent className="space-y-4">
             {data.upcomingWithMine.length === 0 ? (

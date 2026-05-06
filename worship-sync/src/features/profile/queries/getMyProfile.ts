@@ -11,6 +11,10 @@ export type MyProfileRow = {
   role_priority_1: TeamRoleCode | null;
   role_priority_2: TeamRoleCode | null;
   role_priority_3: TeamRoleCode | null;
+  points: number;
+  active_badge: string | null;
+  active_border_color: string | null;
+  active_background_color: string | null;
   updated_at: string;
 };
 
@@ -30,7 +34,7 @@ export async function getMyProfile(): Promise<{
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, username, role, avatar_url, role_priority_1, role_priority_2, role_priority_3, updated_at")
+      .select("id, username, role, avatar_url, role_priority_1, role_priority_2, role_priority_3, points, active_badge, active_border_color, active_background_color, updated_at")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -50,6 +54,10 @@ export async function getMyProfile(): Promise<{
         role_priority_1: (data.role_priority_1 as TeamRoleCode | null) ?? null,
         role_priority_2: (data.role_priority_2 as TeamRoleCode | null) ?? null,
         role_priority_3: (data.role_priority_3 as TeamRoleCode | null) ?? null,
+        points: data.points ?? 0,
+        active_badge: data.active_badge ?? null,
+        active_border_color: data.active_border_color ?? null,
+        active_background_color: data.active_background_color ?? null,
         updated_at: data.updated_at,
       },
       error: null,

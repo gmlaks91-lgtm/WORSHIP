@@ -22,6 +22,7 @@ export type ScheduleAttendanceRow = {
   schedule_id: string;
   user_id: string;
   status: ScheduleAttendanceStatus;
+  reason: string | null;
 };
 
 export async function getSchedulesPageData() {
@@ -79,7 +80,7 @@ export async function getSchedulesPageData() {
   if (scheduleIds.length > 0) {
     const { data: attRaw, error: aErr } = await supabase
       .from("attendances")
-      .select("id, schedule_id, user_id, status")
+      .select("id, schedule_id, user_id, status, reason")
       .in("schedule_id", scheduleIds);
 
     if (aErr) {
