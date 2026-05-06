@@ -1,6 +1,7 @@
 ﻿import { PersonalDashboard } from "@/features/dashboard/components/PersonalDashboard";
 import { getPersonalDashboardData } from "@/features/dashboard/queries/getPersonalDashboardData";
 import { PrepSetlistSection } from "@/features/setlist/components/PrepSetlistSection";
+import { getRecentSongWarningByVideoId } from "@/features/setlist/queries/getSongUsageStats";
 import { LastWorshipVideoSection } from "@/features/team-settings/components/LastWorshipVideoSection";
 import { getSetlists } from "@/features/setlist/queries/getSetlists";
 import type { PrepSetlistWithSheets } from "@/features/setlist/types";
@@ -34,6 +35,7 @@ export default async function SmartSetlistDashboardPage() {
     getPersonalDashboardData(),
     getSetlists(),
   ]);
+  const recentSongWarningByVideoId = canManageSetlists ? await getRecentSongWarningByVideoId() : {};
   const songIds = [...new Set(setlists.flatMap((l) => l.songs.map((s) => s.id)))];
   const sheetMap = await getLatestSheetsBySongIds(songIds);
 
@@ -65,6 +67,7 @@ export default async function SmartSetlistDashboardPage() {
         error={error}
         canManageSetlists={canManageSetlists}
         teamMembers={teamMembers}
+        recentSongWarningByVideoId={recentSongWarningByVideoId}
       />
     </div>
   );

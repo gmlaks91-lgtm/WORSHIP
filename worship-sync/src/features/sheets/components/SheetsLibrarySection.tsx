@@ -102,6 +102,10 @@ export function SheetsLibrarySection({ songs, sheetMap, listError }: SheetsLibra
                             아직 올라온 악보가 없습니다. 아래에서 추가해 보세요.
                           </p>
                         )}
+                        <p className="text-[11px] text-muted-foreground">
+                          올해 누적 {song.yearly_count ?? 0}회 찬양
+                          {song.last_played_at ? ` · 최근 찬양일: ${song.last_played_at}` : ""}
+                        </p>
                       </div>
                     </div>
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">

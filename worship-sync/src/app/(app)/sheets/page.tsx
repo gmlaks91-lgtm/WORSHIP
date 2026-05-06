@@ -1,13 +1,22 @@
 import { SheetsLibrarySection } from "@/features/sheets/components/SheetsLibrarySection";
 import { getSongsForSheetLibrary } from "@/features/sheets/queries/getSongsForSheetLibrary";
 import { getLatestSheetsBySongIds } from "@/features/sheets/queries/getSheets";
+import { getSongUsageStats } from "@/features/setlist/queries/getSongUsageStats";
 
 export const dynamic = "force-dynamic";
 
 export default async function SheetsPage() {
   const { songs, error: listError } = await getSongsForSheetLibrary();
   const songIds = songs.map((s) => s.id);
-  const sheetMap = await getLatestSheetsBySongIds(songIds);
+  const [sheetMap, usageMap] = await Promise.all([
+    getLatestSheetsBySongIds(songIds),
+    getSongUsageStats(songIds),
+  ]);
+  const songsWithStats = songs.map((song) => ({
+    ...song,
+    yearly_count: usageMap[song.id]?.yearly_count ?? 0,
+    last_played_at: usageMap[song.id]?.last_played_at ?? null,
+  }));
 
   return (
     <div className="flex flex-1 flex-col gap-8">
@@ -20,7 +29,7 @@ export default async function SheetsPage() {
         </p>
       </header>
 
-      <SheetsLibrarySection songs={songs} sheetMap={sheetMap} listError={listError} />
+      <SheetsLibrarySection songs={songsWithStats} sheetMap={sheetMap} listError={listError} />
     </div>
   );
 }

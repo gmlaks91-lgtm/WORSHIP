@@ -1,6 +1,7 @@
 ﻿import Link from "next/link";
 
 import { AppHeaderActions } from "@/components/layout/app-header-actions";
+import { getRecentSongWarningByVideoId } from "@/features/setlist/queries/getSongUsageStats";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
 
@@ -15,12 +16,14 @@ export async function AppHeader({ className }: AppHeaderProps) {
   } = await supabase.auth.getUser();
   let canManageSetlists = false;
   let teamMembers: { id: string; username: string }[] = [];
+  let recentSongWarningByVideoId: Record<string, number> = {};
 
   if (user) {
     const [{ data: row }, { data: members }] = await Promise.all([
       supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
       supabase.from("profiles").select("id, username").order("username", { ascending: true }),
     ]);
+    recentSongWarningByVideoId = await getRecentSongWarningByVideoId();
     canManageSetlists = row?.role === "leader";
     teamMembers = (members ?? []) as { id: string; username: string }[];
   }
@@ -42,7 +45,11 @@ export async function AppHeader({ className }: AppHeaderProps) {
         </Link>
         <div className="flex items-center gap-2">
           <span className="hidden text-xs text-muted-foreground lg:inline">아하바 찬양팀</span>
-          <AppHeaderActions canManageSetlists={canManageSetlists} teamMembers={teamMembers} />
+          <AppHeaderActions
+            canManageSetlists={canManageSetlists}
+            teamMembers={teamMembers}
+            recentSongWarningByVideoId={recentSongWarningByVideoId}
+          />
         </div>
       </div>
     </header>

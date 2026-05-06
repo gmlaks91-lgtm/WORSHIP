@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { SheetMedia } from "@/features/sheets/components/SheetMedia";
 import { getLatestSheetForSong } from "@/features/sheets/queries/getSheets";
+import { getSongUsageStats } from "@/features/setlist/queries/getSongUsageStats";
 import { createClient } from "@/utils/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,8 @@ export default async function SheetForSongPage({
     getLatestSheetForSong(songId),
     supabase.from("songs").select("title").eq("id", songId).maybeSingle(),
   ]);
+  const usageMap = await getSongUsageStats([songId]);
+  const usage = usageMap[songId];
 
   const song = songRes.data;
 
@@ -46,6 +49,10 @@ export default async function SheetForSongPage({
           ) : (
             <p className="text-[11px] text-muted-foreground">리더 메모가 없습니다.</p>
           )}
+          <p className="text-[11px] text-muted-foreground">
+            올해 누적 {usage?.yearly_count ?? 0}회 찬양
+            {usage?.last_played_at ? ` · 최근 찬양일: ${usage.last_played_at}` : ""}
+          </p>
         </div>
       </header>
 

@@ -12,6 +12,7 @@ import {
   addSetlistFormSchema,
   type AddSetlistFormValues,
 } from "@/features/setlist/schemas/addSetlist";
+import { getYoutubeVideoId } from "@/features/setlist/utils/youtube";
 import { isMultiMemberRole, TEAM_ROLE_OPTIONS, teamRoleLabel, type TeamRoleCode } from "@/lib/team-roles";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -44,6 +45,7 @@ type AddSetlistDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   teamMembers: LineupMemberOption[];
+  recentSongWarningByVideoId: Record<string, number>;
 };
 
 function makeDefaultLineup() {
@@ -100,7 +102,12 @@ function RoleMemberField({
   );
 }
 
-export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlistDialogProps) {
+export function AddSetlistDialog({
+  open,
+  onOpenChange,
+  teamMembers,
+  recentSongWarningByVideoId,
+}: AddSetlistDialogProps) {
   const form = useForm<AddSetlistFormValues>({
     resolver: zodResolver(addSetlistFormSchema),
     defaultValues: {
@@ -252,6 +259,17 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
                         <Trash2 className="size-4" />
                       </Button>
                     </div>
+                    {(() => {
+                      const currentUrl = form.getValues(`tracks.${index}.youtubeUrl`);
+                      const videoId = getYoutubeVideoId(currentUrl);
+                      const weeks = videoId ? recentSongWarningByVideoId[videoId] : undefined;
+                      if (weeks === undefined) return null;
+                      return (
+                        <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+                          ⚠️ 최근({weeks}주 전) 불렀던 곡입니다.
+                        </p>
+                      );
+                    })()}
                     <FieldError errors={[form.formState.errors.tracks?.[index]?.youtubeUrl]} />
                   </li>
                 ))}
@@ -313,11 +331,13 @@ export function AddSetlistTriggerButton({
   variant = "outline",
   size = "sm",
   teamMembers,
+  recentSongWarningByVideoId = {},
 }: {
   className?: string;
   variant?: React.ComponentProps<typeof Button>["variant"];
   size?: React.ComponentProps<typeof Button>["size"];
   teamMembers: LineupMemberOption[];
+  recentSongWarningByVideoId?: Record<string, number>;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -332,7 +352,12 @@ export function AddSetlistTriggerButton({
         <Plus className="size-4" />
         콘티 추가
       </Button>
-      <AddSetlistDialog open={open} onOpenChange={setOpen} teamMembers={teamMembers} />
+      <AddSetlistDialog
+        open={open}
+        onOpenChange={setOpen}
+        teamMembers={teamMembers}
+        recentSongWarningByVideoId={recentSongWarningByVideoId}
+      />
     </>
   );
 }

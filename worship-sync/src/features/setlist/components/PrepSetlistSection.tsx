@@ -2,6 +2,7 @@
 
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 
 import { upsertSetlistLineup } from "@/features/setlist/actions/setlistActions";
@@ -27,6 +28,7 @@ type PrepSetlistSectionProps = {
   error: string | null;
   canManageSetlists: boolean;
   teamMembers: TeamMemberRow[];
+  recentSongWarningByVideoId?: Record<string, number>;
 };
 
 type LineupEditorProps = {
@@ -167,6 +169,7 @@ export function PrepSetlistSection({
   error,
   canManageSetlists,
   teamMembers,
+  recentSongWarningByVideoId = {},
 }: PrepSetlistSectionProps) {
   const hasLists = setlists.length > 0;
 
@@ -183,6 +186,7 @@ export function PrepSetlistSection({
               size="sm"
               className="mt-3 w-full shadow-sm sm:mt-0 sm:w-auto"
               teamMembers={teamMembers.map((m) => ({ id: m.id, username: m.username }))}
+              recentSongWarningByVideoId={recentSongWarningByVideoId}
             />
           ) : null}
         </div>
@@ -207,7 +211,9 @@ export function PrepSetlistSection({
                 <div key={list.id} className="space-y-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-1">
-                      <h3 className="text-base font-semibold tracking-tight">{list.title}</h3>
+                      <Link href={`/setlists/${list.id}`} className="text-base font-semibold tracking-tight underline-offset-4 hover:underline">
+                        {list.title}
+                      </Link>
                       <p className="text-xs text-muted-foreground">{format(new Date(list.event_date), "PPP", { locale: ko })}</p>
                     </div>
                     {canManageSetlists ? (

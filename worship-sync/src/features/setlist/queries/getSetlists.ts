@@ -22,6 +22,7 @@ export type PrepSetlistRow = {
   title: string;
   event_date: string;
   status: "prep" | "confirmed";
+  staff_notes: string | null;
   songs: SetlistSongRow[];
   lineup: SetlistLineupRow[];
 };
@@ -36,6 +37,7 @@ type SetlistQueryRow = {
   title: string;
   event_date: string;
   status: string;
+  staff_notes: string | null;
   setlist_songs:
     | {
         order_index: number;
@@ -69,6 +71,7 @@ export async function getSetlists(options?: { limit?: number }): Promise<GetSetl
         title,
         event_date,
         status,
+        staff_notes,
         setlist_songs (
           order_index,
           songs (
@@ -121,6 +124,7 @@ export async function getSetlists(options?: { limit?: number }): Promise<GetSetl
         title: row.title,
         event_date: row.event_date,
         status: row.status as PrepSetlistRow["status"],
+        staff_notes: row.staff_notes ?? null,
         songs,
         lineup,
       };

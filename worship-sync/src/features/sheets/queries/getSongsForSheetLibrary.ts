@@ -5,6 +5,8 @@ import { createClient } from "@/utils/supabase/server";
 export type SheetLibrarySongRow = {
   id: string;
   title: string;
+  yearly_count?: number;
+  last_played_at?: string | null;
 };
 
 export async function getSongsForSheetLibrary(): Promise<{

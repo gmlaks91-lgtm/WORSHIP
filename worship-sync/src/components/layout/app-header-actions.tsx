@@ -7,9 +7,14 @@ import { Button } from "@/components/ui/button";
 type AppHeaderActionsProps = {
   canManageSetlists: boolean;
   teamMembers: Array<{ id: string; username: string }>;
+  recentSongWarningByVideoId: Record<string, number>;
 };
 
-export function AppHeaderActions({ canManageSetlists, teamMembers }: AppHeaderActionsProps) {
+export function AppHeaderActions({
+  canManageSetlists,
+  teamMembers,
+  recentSongWarningByVideoId,
+}: AppHeaderActionsProps) {
   return (
     <div className="flex items-center gap-1.5 sm:gap-2">
       {canManageSetlists ? (
@@ -18,6 +23,7 @@ export function AppHeaderActions({ canManageSetlists, teamMembers }: AppHeaderAc
           size="sm"
           className="border-border/80 shadow-sm"
           teamMembers={teamMembers}
+          recentSongWarningByVideoId={recentSongWarningByVideoId}
         />
       ) : null}
       <form action={signOut}>

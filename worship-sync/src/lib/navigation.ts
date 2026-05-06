@@ -1,5 +1,5 @@
 ﻿import type { LucideIcon } from "lucide-react";
-import { BookOpen, CalendarDays, HeartPulse, LayoutList, MessagesSquare, MoreHorizontal, ShoppingBag, Users } from "lucide-react";
+import { BookOpen, CalendarDays, HandHeart, HeartPulse, LayoutList, MessagesSquare, MoreHorizontal, ShoppingBag, Users } from "lucide-react";
 
 export type AppNavItem = {
   href: string;
@@ -11,6 +11,7 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
   { href: "/", label: "송리스트", icon: LayoutList },
   { href: "/sheets", label: "악보", icon: BookOpen },
   { href: "/schedule", label: "일정", icon: CalendarDays },
+  { href: "/prayer", label: "기도나눔", icon: HandHeart },
   { href: "/faith", label: "신앙", icon: HeartPulse },
   { href: "/shop", label: "상점", icon: ShoppingBag },
   { href: "/team", label: "팀", icon: Users },

@@ -109,6 +109,7 @@ export type Database = {
           event_date: string;
           title: string;
           status: SetlistStatus;
+          staff_notes: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -117,6 +118,7 @@ export type Database = {
           event_date: string;
           title: string;
           status?: SetlistStatus;
+          staff_notes?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -125,6 +127,7 @@ export type Database = {
           event_date?: string;
           title?: string;
           status?: SetlistStatus;
+          staff_notes?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -403,6 +406,48 @@ export type Database = {
           shop_item_id?: string;
           is_applied?: boolean;
           acquired_at?: string;
+        };
+        Relationships: [];
+      };
+      prayer_requests: {
+        Row: {
+          id: string;
+          content: string;
+          user_id: string;
+          is_anonymous: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          content: string;
+          user_id: string;
+          is_anonymous?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          content?: string;
+          user_id?: string;
+          is_anonymous?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      prayer_reactions: {
+        Row: {
+          request_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          request_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          request_id?: string;
+          user_id?: string;
+          created_at?: string;
         };
         Relationships: [];
       };
