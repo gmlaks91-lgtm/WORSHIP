@@ -3,42 +3,38 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { requireLeader } from "@/lib/require-leader";
 import { createClient } from "@/utils/supabase/server";
 
-const eventTypeSchema = z.enum(["practice", "worship"]);
-const statusSchema = z.enum(["attending", "late", "absent"]);
-const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const scheduleKindSchema = z.enum(["practice", "worship", "social"]);
+const scheduleAttendanceStatusSchema = z.enum(["attending", "absent", "pending"]);
 
-const toggleSchema = z.object({
-  eventDate: dateSchema,
-  eventType: eventTypeSchema,
-  status: statusSchema,
-  reason: z.string().max(2000).optional().nullable(),
+const setAttendanceSchema = z.object({
+  scheduleId: z.string().uuid(),
+  status: scheduleAttendanceStatusSchema,
 });
 
-const reasonSchema = z.object({
-  eventDate: dateSchema,
-  eventType: eventTypeSchema,
-  reason: z.string().max(2000),
+const createScheduleSchema = z.object({
+  title: z.string().min(1).max(200),
+  kind: scheduleKindSchema,
+  startsAt: z.string().min(1),
+});
+
+const deleteScheduleSchema = z.object({
+  scheduleId: z.string().uuid(),
 });
 
 export type ActionResult = { ok: true } | { ok: false; message: string };
 
-export async function toggleAttendance(
-  raw: z.infer<typeof toggleSchema>,
+export async function setScheduleAttendance(
+  raw: z.infer<typeof setAttendanceSchema>,
 ): Promise<ActionResult> {
-  const parsed = toggleSchema.safeParse(raw);
+  const parsed = setAttendanceSchema.safeParse(raw);
   if (!parsed.success) {
     return { ok: false, message: "입력값을 확인하세요." };
   }
 
-  const { eventDate, eventType, status } = parsed.data;
-  const reason =
-    status === "attending"
-      ? null
-      : parsed.data.reason?.trim()
-        ? parsed.data.reason.trim()
-        : null;
+  const { scheduleId, status } = parsed.data;
 
   try {
     const supabase = await createClient();
@@ -50,15 +46,13 @@ export async function toggleAttendance(
       return { ok: false, message: "로그인이 필요합니다." };
     }
 
-    const { error } = await supabase.from("attendance").upsert(
+    const { error } = await supabase.from("attendances").upsert(
       {
+        schedule_id: scheduleId,
         user_id: user.id,
-        event_date: eventDate,
-        event_type: eventType,
         status,
-        reason,
       },
-      { onConflict: "user_id,event_date,event_type" },
+      { onConflict: "schedule_id,user_id" },
     );
 
     if (error) {
@@ -66,6 +60,7 @@ export async function toggleAttendance(
     }
 
     revalidatePath("/schedule");
+    revalidatePath("/");
     return { ok: true };
   } catch (e) {
     const message = e instanceof Error ? e.message : "알 수 없는 오류입니다.";
@@ -73,37 +68,65 @@ export async function toggleAttendance(
   }
 }
 
-export async function updateReason(raw: z.infer<typeof reasonSchema>): Promise<ActionResult> {
-  const parsed = reasonSchema.safeParse(raw);
+export async function createSchedule(raw: z.infer<typeof createScheduleSchema>): Promise<ActionResult> {
+  const parsed = createScheduleSchema.safeParse(raw);
   if (!parsed.success) {
-    return { ok: false, message: "사유를 확인하세요." };
+    return { ok: false, message: "일정 정보를 확인하세요." };
   }
 
-  const { eventDate, eventType, reason } = parsed.data;
-  const trimmed = reason.trim();
+  const { title, kind, startsAt } = parsed.data;
+  const t = Date.parse(startsAt);
+  if (Number.isNaN(t)) {
+    return { ok: false, message: "날짜·시간 형식이 올바르지 않습니다." };
+  }
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { ok: false, message: "로그인이 필요합니다." };
+    const leader = await requireLeader(supabase);
+    if (!leader.ok) {
+      return { ok: false, message: "리더만 일정을 추가할 수 있습니다." };
     }
 
-    const { error } = await supabase
-      .from("attendance")
-      .update({ reason: trimmed.length ? trimmed : null })
-      .eq("user_id", user.id)
-      .eq("event_date", eventDate)
-      .eq("event_type", eventType);
+    const { error } = await supabase.from("schedules").insert({
+      title: title.trim(),
+      kind,
+      starts_at: new Date(t).toISOString(),
+    });
 
     if (error) {
       return { ok: false, message: error.message };
     }
 
     revalidatePath("/schedule");
+    revalidatePath("/");
+    return { ok: true };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "알 수 없는 오류입니다.";
+    return { ok: false, message };
+  }
+}
+
+export async function deleteSchedule(raw: z.infer<typeof deleteScheduleSchema>): Promise<ActionResult> {
+  const parsed = deleteScheduleSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, message: "일정을 확인하세요." };
+  }
+
+  try {
+    const supabase = await createClient();
+    const leader = await requireLeader(supabase);
+    if (!leader.ok) {
+      return { ok: false, message: "리더만 일정을 삭제할 수 있습니다." };
+    }
+
+    const { error } = await supabase.from("schedules").delete().eq("id", parsed.data.scheduleId);
+
+    if (error) {
+      return { ok: false, message: error.message };
+    }
+
+    revalidatePath("/schedule");
+    revalidatePath("/");
     return { ok: true };
   } catch (e) {
     const message = e instanceof Error ? e.message : "알 수 없는 오류입니다.";

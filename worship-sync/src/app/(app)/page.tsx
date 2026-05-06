@@ -1,3 +1,5 @@
+import { PersonalDashboard } from "@/features/dashboard/components/PersonalDashboard";
+import { getPersonalDashboardData } from "@/features/dashboard/queries/getPersonalDashboardData";
 import { PrepSetlistSection } from "@/features/setlist/components/PrepSetlistSection";
 import { getSetlists } from "@/features/setlist/queries/getSetlists";
 import type { PrepSetlistWithSheets } from "@/features/setlist/types";
@@ -21,7 +23,10 @@ export default async function SmartSetlistDashboardPage() {
     canManageSetlists = row?.role === "leader";
   }
 
-  const { setlists, error } = await getSetlists();
+  const [dashboardData, { setlists, error }] = await Promise.all([
+    getPersonalDashboardData(),
+    getSetlists(),
+  ]);
   const songIds = [...new Set(setlists.flatMap((l) => l.songs.map((s) => s.id)))];
   const sheetMap = await getLatestSheetsBySongIds(songIds);
 
@@ -46,6 +51,8 @@ export default async function SmartSetlistDashboardPage() {
           예습(prep) 콘티와 수록곡을 불러옵니다. 콘티 추가·편집은 리더만 할 수 있습니다.
         </p>
       </section>
+
+      <PersonalDashboard data={dashboardData} />
 
       <PrepSetlistSection
         setlists={setlistsWithSheets}

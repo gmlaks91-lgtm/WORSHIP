@@ -15,6 +15,10 @@ export type ProfileRole = "leader" | "member";
 export type SetlistStatus = "prep" | "confirmed";
 export type AttendanceStatus = "attending" | "late" | "absent";
 export type AttendanceEventType = "practice" | "worship";
+/** 일정(schedules) 종류 */
+export type ScheduleKind = "practice" | "worship" | "social";
+/** 일정별 참석 응답 — 참석 / 불참 / 미정 */
+export type ScheduleAttendanceStatus = "attending" | "absent" | "pending";
 export type PostCategory = "prayer" | "feedback" | "general";
 
 export type Database = {
@@ -180,6 +184,60 @@ export type Database = {
           event_type?: AttendanceEventType;
           status?: AttendanceStatus;
           reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      schedules: {
+        Row: {
+          id: string;
+          title: string;
+          kind: ScheduleKind;
+          starts_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          kind: ScheduleKind;
+          starts_at: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          kind?: ScheduleKind;
+          starts_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      attendances: {
+        Row: {
+          id: string;
+          schedule_id: string;
+          user_id: string;
+          status: ScheduleAttendanceStatus;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          schedule_id: string;
+          user_id: string;
+          status: ScheduleAttendanceStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          schedule_id?: string;
+          user_id?: string;
+          status?: ScheduleAttendanceStatus;
           created_at?: string;
           updated_at?: string;
         };

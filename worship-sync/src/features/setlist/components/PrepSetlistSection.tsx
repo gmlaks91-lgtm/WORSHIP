@@ -14,7 +14,7 @@ export function PrepSetlistSection({ setlists, error, canManageSetlists }: PrepS
 
   return (
     <>
-      <section className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
+      <section id="prep-setlists" className="scroll-mt-6 rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-sm font-medium text-foreground">예습 모드</h2>

@@ -45,7 +45,8 @@ type SetlistQueryRow = {
 /**
  * 최근 `prep` 상태 콘티와 곡(setlist_songs → songs)을 조인해 반환합니다.
  */
-export async function getSetlists(): Promise<GetSetlistsResult> {
+export async function getSetlists(options?: { limit?: number }): Promise<GetSetlistsResult> {
+  const limit = options?.limit ?? 10;
   try {
     const supabase = await createClient();
 
@@ -70,7 +71,7 @@ export async function getSetlists(): Promise<GetSetlistsResult> {
       )
       .eq("status", "prep")
       .order("event_date", { ascending: false })
-      .limit(10);
+      .limit(limit);
 
     if (setlistError) {
       return { setlists: [], error: setlistError.message };
