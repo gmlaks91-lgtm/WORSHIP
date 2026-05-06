@@ -129,7 +129,7 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
         </div>
       </section>
 
-      <section className="space-y-3 rounded-2xl border border-border/55 bg-card/60 p-4 shadow-sm sm:p-5">
+      <section className="space-y-4 rounded-lg border border-border/60 bg-card/70 p-5 shadow-sm sm:p-6">
         <h2 className="text-sm font-medium text-foreground">표시 이름</h2>
         <p className="text-xs text-muted-foreground">팀원 목록·게시판 등에 보이는 이름입니다.</p>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">

@@ -52,7 +52,7 @@ export function CreatePostForm({ category }: CreatePostFormProps) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border/55 bg-gradient-to-b from-card via-card to-muted/[0.12] p-1 shadow-[0_12px_40px_-20px_rgba(0,0,0,0.35)] ring-1 ring-black/[0.03] transition-[box-shadow] duration-300",
+        "rounded-lg border border-border/60 bg-gradient-to-b from-card via-card to-muted/[0.12] p-1.5 shadow-[0_12px_40px_-20px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.04] transition-[box-shadow] duration-300 dark:shadow-[0_12px_40px_-20px_rgba(0,0,0,0.5)]",
         "dark:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.65)] dark:ring-white/[0.06]",
         expanded && "shadow-[0_16px_48px_-18px_rgba(0,0,0,0.4)] ring-primary/15 dark:ring-primary/20",
       )}

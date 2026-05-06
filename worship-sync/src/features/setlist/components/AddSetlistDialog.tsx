@@ -185,9 +185,9 @@ export function AddSetlistDialog({ open, onOpenChange }: AddSetlistDialogProps) 
           </DialogHeader>
         </div>
 
-        <form onSubmit={onSubmit} className="flex flex-col gap-5 px-4 py-4 sm:px-5">
-          <FieldSet className="gap-4">
-            <FieldGroup className="gap-4">
+        <form onSubmit={onSubmit} className="flex flex-col gap-6 px-5 py-5 sm:px-6">
+          <FieldSet className="gap-5">
+            <FieldGroup className="gap-5">
               <Field>
                 <FieldLabel htmlFor="setlist-title">콘티 제목</FieldLabel>
                 <Input
@@ -265,7 +265,7 @@ export function AddSetlistDialog({ open, onOpenChange }: AddSetlistDialogProps) 
                 {fields.map((field, index) => (
                   <li
                     key={field.id}
-                    className="rounded-xl border border-border/60 bg-card/50 p-4 shadow-sm"
+                    className="rounded-lg border border-border/60 bg-card/50 p-5 shadow-sm"
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                       <Field className="flex-1 gap-1.5">

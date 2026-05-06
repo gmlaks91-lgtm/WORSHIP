@@ -66,7 +66,7 @@ export function YouTubePlayer({ className }: YouTubePlayerProps) {
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <div className="overflow-hidden rounded-xl ring-1 ring-border/60">
+        <div className="overflow-hidden rounded-lg ring-1 ring-border/60">
           <ReactYouTube
             key={current.videoId}
             videoId={current.videoId}

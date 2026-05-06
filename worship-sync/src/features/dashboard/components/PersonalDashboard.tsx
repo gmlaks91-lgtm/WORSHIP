@@ -64,7 +64,7 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
   const errLine = data.errors.length ? data.errors.join(" · ") : null;
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-6">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
@@ -88,12 +88,12 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
       </div>
 
       {errLine ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-xs text-destructive">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3.5 text-xs text-destructive">
           일부 정보를 불러오지 못했습니다: {errLine}
         </div>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card className="border-border/70 shadow-sm ring-1 ring-border/30">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
@@ -102,7 +102,7 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
             </div>
             <CardDescription>참석·불참·미정을 빠르게 확인하세요.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
             {data.upcomingWithMine.length === 0 ? (
               <p className="text-sm text-muted-foreground">예정된 일정이 없습니다.</p>
             ) : (
@@ -113,7 +113,7 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
                     <li key={schedule.id}>
                       <Link
                         href="/schedule"
-                        className="flex flex-col gap-2 rounded-xl border border-border/60 bg-muted/15 px-3 py-3 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between"
+                        className="flex flex-col gap-2 rounded-lg border border-border/60 bg-muted/15 px-4 py-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div className="min-w-0 space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
@@ -148,7 +148,7 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
           </CardContent>
         </Card>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
           <Card className="border-border/70 shadow-sm ring-1 ring-border/30">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
@@ -161,12 +161,12 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
               {data.recentSetlists.length === 0 ? (
                 <p className="text-sm text-muted-foreground">표시할 콘티가 없습니다.</p>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {data.recentSetlists.map((list) => (
                     <li key={list.id}>
                       <Link
                         href="/#prep-setlists"
-                        className="block rounded-xl border border-border/60 bg-muted/15 px-3 py-2.5 transition-colors hover:bg-muted/30"
+                        className="block rounded-lg border border-border/60 bg-muted/15 px-4 py-3 transition-colors hover:bg-muted/30"
                       >
                         <p className="truncate text-sm font-medium">{list.title}</p>
                         <p className="text-xs text-muted-foreground">
@@ -197,16 +197,16 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
               </div>
               <CardDescription>최근 업로드된 파일입니다.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-3">
               {data.recentSheets.length === 0 ? (
                 <p className="text-sm text-muted-foreground">최근 악보가 없습니다.</p>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {data.recentSheets.map((row) => (
                     <li key={row.id}>
                       <Link
                         href={`/sheets/${row.song_id}`}
-                        className="block rounded-xl border border-border/60 bg-muted/15 px-3 py-2.5 transition-colors hover:bg-muted/30"
+                        className="block rounded-lg border border-border/60 bg-muted/15 px-4 py-3 transition-colors hover:bg-muted/30"
                       >
                         <p className="truncate text-sm font-medium">{row.song_title}</p>
                         <p className="text-xs text-muted-foreground">

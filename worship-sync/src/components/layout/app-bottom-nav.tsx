@@ -27,7 +27,7 @@ export function AppBottomNav({ className }: AppBottomNavProps) {
       )}
       aria-label="주요 메뉴"
     >
-      <div className="mx-auto grid max-w-3xl grid-cols-5 px-0.5 pt-1 sm:px-1">
+      <div className="mx-auto grid max-w-3xl grid-cols-5 px-1 pt-2 pb-1 sm:px-2">
         {APP_NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
@@ -35,7 +35,7 @@ export function AppBottomNav({ className }: AppBottomNavProps) {
               key={href}
               href={href}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 rounded-xl py-2 text-[10px] font-medium transition-colors sm:text-[11px]",
+                "flex flex-col items-center justify-center gap-1 rounded-lg py-2.5 text-[10px] font-medium transition-colors sm:text-[11px]",
                 active
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground",
@@ -43,7 +43,7 @@ export function AppBottomNav({ className }: AppBottomNavProps) {
             >
               <span
                 className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-xl transition-[background,box-shadow,color]",
+                  "flex h-10 w-10 items-center justify-center rounded-lg transition-[background,box-shadow,color]",
                   active
                     ? "bg-primary/10 text-primary shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]"
                     : "bg-transparent",

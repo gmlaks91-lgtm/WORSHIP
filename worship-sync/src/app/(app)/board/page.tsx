@@ -18,7 +18,7 @@ export default async function BoardPage({
   const { posts, error } = await getBoardFeed(category);
 
   return (
-    <div className="flex flex-1 flex-col gap-6">
+    <div className="flex flex-1 flex-col gap-8">
       <header className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">소통</p>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">게시판</h1>
@@ -28,7 +28,7 @@ export default async function BoardPage({
       </header>
 
       {error ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3.5 text-sm text-destructive">
           게시글을 불러오지 못했습니다: {error}
         </div>
       ) : null}

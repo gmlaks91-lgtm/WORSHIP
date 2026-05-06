@@ -33,7 +33,7 @@ export function SheetsLibrarySection({ songs, sheetMap, listError }: SheetsLibra
 
   return (
     <>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
           곡마다 PDF·이미지 악보를 올리고, 전용 뷰어에서 볼 수 있습니다.
         </p>
@@ -52,7 +52,7 @@ export function SheetsLibrarySection({ songs, sheetMap, listError }: SheetsLibra
       </div>
 
       {listError ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3.5 text-sm text-destructive">
           곡 목록을 불러오지 못했습니다: {listError}
         </div>
       ) : null}
@@ -70,17 +70,17 @@ export function SheetsLibrarySection({ songs, sheetMap, listError }: SheetsLibra
       ) : null}
 
       {!listError && songs.length > 0 ? (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-4">
           {songs.map((song) => {
             const latest = sheetMap[song.id];
             return (
               <li key={song.id}>
                 <Card className="overflow-hidden border-border/55 shadow-sm transition-shadow hover:shadow-md">
-                  <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:p-5">
+                  <CardContent className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-6">
                     <div className="flex min-w-0 flex-1 items-start gap-3">
                       <div
                         className={cn(
-                          "flex size-11 shrink-0 items-center justify-center rounded-xl border border-border/50 bg-muted/30 shadow-inner",
+                          "flex size-11 shrink-0 items-center justify-center rounded-lg border border-border/50 bg-muted/30 shadow-inner",
                         )}
                         aria-hidden
                       >

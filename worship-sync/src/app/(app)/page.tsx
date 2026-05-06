@@ -39,7 +39,7 @@ export default async function SmartSetlistDashboardPage() {
   }));
 
   return (
-    <div className="flex flex-1 flex-col gap-8">
+    <div className="flex flex-1 flex-col gap-10">
       <section className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
           이번 주 콘티

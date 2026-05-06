@@ -114,7 +114,7 @@ function MyResponsePicker({
   };
 
   return (
-    <div className="grid grid-cols-3 gap-2 sm:max-w-md">
+    <div className="grid grid-cols-3 gap-3 sm:max-w-md">
       {(
         [
           { key: "attending" as const, icon: Check, label: "참석" },
@@ -168,7 +168,7 @@ function TeamStrip({
   } as const;
 
   return (
-    <div className={cn("rounded-xl border border-border/60 p-3 shadow-sm", toneMap[tone])}>
+    <div className={cn("rounded-lg border border-border/60 p-4 shadow-sm", toneMap[tone])}>
       <div className="mb-2 flex items-center justify-between gap-2">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
           {title}
@@ -289,7 +289,7 @@ function ScheduleEventCard({
           ) : null}
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-6 pt-5">
+      <CardContent className="flex flex-col gap-8 pt-6">
         <section className="space-y-3">
           <h3 className="text-sm font-medium">내 응답</h3>
           {!currentUserId ? (
@@ -305,7 +305,7 @@ function ScheduleEventCard({
 
         <section className="space-y-3">
           <h3 className="text-sm font-medium">팀 현황</h3>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             <TeamStrip title="참석" tone="emerald" members={grouped.attending} />
             <TeamStrip title="불참" tone="red" members={grouped.absent} />
             <TeamStrip title="미정" tone="amber" members={grouped.pending} />
@@ -389,7 +389,7 @@ function AddScheduleDialog({ disabled }: { disabled?: boolean }) {
               연습·예배·모임 일정을 추가합니다. 팀원은 각 카드에서 참석 여부를 선택할 수 있습니다.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-5 py-5">
             <div className="grid gap-2">
               <Label htmlFor="sch-title">이름</Label>
               <Input
@@ -489,15 +489,15 @@ export function SchedulesSection({
   }, [sortedSchedules]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       {isLeader ? (
-        <div className="flex flex-wrap items-center justify-end gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-4">
           <AddScheduleDialog />
         </div>
       ) : null}
 
       {schedules.length === 0 ? (
-        <div className="flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-border/90 bg-muted/20 px-4 py-10 text-center">
+        <div className="flex min-h-[220px] flex-col items-center justify-center rounded-lg border border-dashed border-border/90 bg-muted/25 px-6 py-12 text-center">
           <p className="text-sm font-medium text-foreground">예정된 일정이 없습니다</p>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
             리더가 일정을 추가하면 여기에 표시됩니다. 지금은 다가오는 일정이 없거나 이미 지난 일정만 있을 수
@@ -505,16 +505,16 @@ export function SchedulesSection({
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-10">
           {dayOrder.map((day) => (
-            <div key={day} className="space-y-4">
+            <div key={day} className="space-y-5">
               <div className="flex items-center gap-3">
                 <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {day}
                 </p>
                 <div className="h-px flex-1 bg-border/70" />
               </div>
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-8">
                 {(groupedByDay.get(day) ?? []).map((schedule) => {
                   const rowsForSchedule = attendances.filter((a) => a.schedule_id === schedule.id);
                   return (

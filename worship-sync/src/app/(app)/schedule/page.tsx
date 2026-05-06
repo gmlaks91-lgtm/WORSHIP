@@ -8,7 +8,7 @@ export default async function SchedulePage() {
     await getSchedulesPageData();
 
   return (
-    <div className="flex flex-1 flex-col gap-6">
+    <div className="flex flex-1 flex-col gap-8">
       <header className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
           팀 캘린더
@@ -23,7 +23,7 @@ export default async function SchedulePage() {
       </header>
 
       {error ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3.5 text-sm text-destructive">
           데이터를 불러오지 못했습니다: {error}
         </div>
       ) : null}

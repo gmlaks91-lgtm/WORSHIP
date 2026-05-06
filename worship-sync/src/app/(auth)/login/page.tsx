@@ -4,7 +4,7 @@ import { LoginForm } from "@/features/auth/components/login-form";
 
 function LoginFallback() {
   return (
-    <div className="rounded-xl border border-border/70 bg-card p-8 text-center text-sm text-muted-foreground shadow-sm">
+    <div className="rounded-lg border border-border/70 bg-card p-8 text-center text-sm text-muted-foreground shadow-sm sm:p-10">
       로그인 화면을 불러오는 중…
     </div>
   );

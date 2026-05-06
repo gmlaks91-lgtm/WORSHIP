@@ -172,7 +172,7 @@ export function UploadSheetModal(props: UploadSheetModalProps) {
                     aria-label="곡 검색"
                   />
                   <div
-                    className="max-h-36 overflow-y-auto rounded-xl border border-border/60 bg-muted/10 p-1.5"
+                    className="max-h-36 overflow-y-auto rounded-lg border border-border/60 bg-muted/10 p-2"
                     role="listbox"
                     aria-label="곡 목록"
                   >
@@ -223,7 +223,7 @@ export function UploadSheetModal(props: UploadSheetModalProps) {
               <div
                 {...getRootProps()}
                 className={cn(
-                  "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/80 bg-muted/20 px-4 py-8 text-center transition-[background,border-color]",
+                  "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border/80 bg-muted/20 px-5 py-10 text-center transition-[background,border-color]",
                   isDragActive && "border-primary/50 bg-primary/5",
                   busy && "pointer-events-none opacity-60",
                 )}

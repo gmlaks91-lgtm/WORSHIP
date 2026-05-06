@@ -31,7 +31,7 @@ export async function AppHeader({ className }: AppHeaderProps) {
         className,
       )}
     >
-      <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-3 px-4 sm:h-16 sm:px-6">
+      <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-3 px-5 sm:h-16 sm:px-7">
         <Link
           href="/"
           className="group flex flex-col gap-0.5 transition-opacity hover:opacity-90"

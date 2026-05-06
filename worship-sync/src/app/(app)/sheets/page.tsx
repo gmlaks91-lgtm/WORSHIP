@@ -10,7 +10,7 @@ export default async function SheetsPage() {
   const sheetMap = await getLatestSheetsBySongIds(songIds);
 
   return (
-    <div className="flex flex-1 flex-col gap-6">
+    <div className="flex flex-1 flex-col gap-8">
       <header className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">자료실</p>
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">악보 라이브러리</h1>

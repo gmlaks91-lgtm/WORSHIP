@@ -68,7 +68,7 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
   return (
     <article
       className={cn(
-        "rounded-2xl border border-border/55 bg-card/80 px-4 py-6 shadow-sm backdrop-blur-sm sm:px-5",
+        "rounded-lg border border-border/60 bg-card/90 px-5 py-7 shadow-sm backdrop-blur-sm sm:px-6",
         "dark:bg-card/55 dark:shadow-[0_12px_40px_-24px_rgba(0,0,0,0.55)]",
       )}
     >
@@ -96,7 +96,7 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
           </div>
 
           {editing ? (
-            <div className="space-y-3 rounded-xl border border-border/55 bg-muted/15 p-4">
+            <div className="space-y-3 rounded-lg border border-border/60 bg-muted/15 p-4 sm:p-5">
               <textarea
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}

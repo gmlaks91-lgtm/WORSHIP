@@ -16,7 +16,7 @@ export async function AppShell({ children, className }: AppShellProps) {
   return (
     <div className={cn("flex min-h-full flex-1 flex-col bg-background", className)}>
       <AppHeader />
-      <main className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col px-5 pb-28 pt-7 sm:px-6 sm:pb-32 sm:pt-8">
+      <main className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col px-5 pb-32 pt-9 sm:px-7 sm:pb-36 sm:pt-10">
         {children}
       </main>
       <AppBottomNav />

@@ -25,14 +25,14 @@ export function BoardFeed({ category, posts, currentUserId }: BoardFeedProps) {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <Tabs
         value={category}
         onValueChange={(v) => {
           const next = v as PostCategory;
           router.push(`/board?category=${next}`);
         }}
-        className="gap-5"
+        className="gap-6"
       >
         <TabsList variant="line" className="h-auto w-full justify-between gap-1 p-0 sm:justify-start">
           {tabs.map((t) => (
@@ -40,7 +40,7 @@ export function BoardFeed({ category, posts, currentUserId }: BoardFeedProps) {
               key={t.value}
               value={t.value}
               className={cn(
-                "flex-1 rounded-xl px-2 py-2 text-[11px] font-semibold sm:flex-none sm:px-4 sm:text-sm",
+                "flex-1 rounded-lg px-2 py-2 text-[11px] font-semibold sm:flex-none sm:px-4 sm:text-sm",
                 "data-active:after:opacity-100",
               )}
             >
@@ -54,15 +54,15 @@ export function BoardFeed({ category, posts, currentUserId }: BoardFeedProps) {
         </TabsList>
 
         {tabs.map((t) => (
-          <TabsContent key={t.value} value={t.value} className="mt-0 flex flex-col gap-5 outline-none">
+          <TabsContent key={t.value} value={t.value} className="mt-0 flex flex-col gap-6 outline-none">
             {t.value === category ? <CreatePostForm category={category} /> : null}
             {t.value === category && posts.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-border/80 bg-muted/20 px-4 py-10 text-center text-sm text-muted-foreground">
+              <p className="rounded-lg border border-dashed border-border/80 bg-muted/25 px-5 py-12 text-center text-sm text-muted-foreground">
                 아직 글이 없습니다. 첫 글을 남겨 보세요.
               </p>
             ) : null}
             {t.value === category ? (
-              <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-6">
                 {posts.map((p) => (
                   <PostCard key={p.id} post={p} currentUserId={currentUserId} />
                 ))}
