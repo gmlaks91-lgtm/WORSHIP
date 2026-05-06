@@ -1,6 +1,6 @@
 /**
- * Supabase `public` 스키마에 대응하는 타입.
- * 마이그레이션 후 `supabase gen types typescript`로 재생성해 동기화하는 것을 권장합니다.
+ * Supabase `public` ??????? ??????? ???.
+ * ????????? ?? `supabase gen types typescript`?? ??????? ???????? ???? ????????.
  */
 export type Json =
   | string
@@ -10,7 +10,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-/** DB 저장용 ? UI 라벨은 별도 매핑 */
+/** DB ????? ? UI ???? ???? ???? */
 export type ProfileRole = "leader" | "member";
 export type TeamRoleCode = "L" | "M" | "S" | "D" | "A/G" | "B/G" | "E/G" | "V" | "STAFF";
 export type SetlistStatus = "prep" | "confirmed";
@@ -273,6 +273,30 @@ export type Database = {
           schedule_id?: string;
           user_id?: string;
           status?: ScheduleAttendanceStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      team_settings: {
+        Row: {
+          id: boolean;
+          playlist_id: string | null;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: boolean;
+          playlist_id?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: boolean;
+          playlist_id?: string | null;
+          updated_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };

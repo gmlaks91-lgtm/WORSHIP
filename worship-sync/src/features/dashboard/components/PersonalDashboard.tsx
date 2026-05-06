@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarRange, ListMusic, Music2 } from "lucide-react";
 
 import type { PersonalDashboardData } from "@/features/dashboard/queries/getPersonalDashboardData";
+import { TeamPlaylistSection } from "@/features/team-settings/components/TeamPlaylistSection";
 import type { ScheduleAttendanceStatus, ScheduleKind } from "@/types/database";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -228,6 +229,12 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
               </Link>
             </CardContent>
           </Card>
+
+          <TeamPlaylistSection
+            playlistId={data.teamPlaylistId}
+            embedUrl={data.teamPlaylistEmbedUrl}
+            canEdit={data.canManageTeamPlaylist}
+          />
         </div>
       </div>
     </section>

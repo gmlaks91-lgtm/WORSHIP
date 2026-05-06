@@ -1,25 +1,37 @@
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 import type { Database } from "@/types/database";
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/";
+  const requestHeaders = await headers();
+  const forwardedHost = requestHeaders.get("x-forwarded-host");
+  const forwardedProto = requestHeaders.get("x-forwarded-proto");
+  const host = forwardedHost ?? requestHeaders.get("host");
+  const safeOrigin =
+    host && forwardedProto ? `${forwardedProto}://${host}` : new URL(request.url).origin;
+  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/login?error=missing_code`);
+    return NextResponse.redirect(`${safeOrigin}/login?error=missing_code`);
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
-    return NextResponse.redirect(`${origin}/login?error=not_configured`);
+    return NextResponse.redirect(`${safeOrigin}/login?error=not_configured`);
   }
 
+  const pendingCookies: Array<{
+    name: string;
+    value: string;
+    options?: Record<string, unknown>;
+  }> = [];
   const cookieStore = await cookies();
   const supabase = createServerClient<Database>(url, key, {
     cookies: {
@@ -27,13 +39,10 @@ export async function GET(request: Request) {
         return cookieStore.getAll();
       },
       setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options),
-          );
-        } catch {
-          /* setAll from route handler — 미들웨어가 세션을 갱신합니다 */
-        }
+        cookiesToSet.forEach(({ name, value, options }) => {
+          pendingCookies.push({ name, value, options });
+          cookieStore.set(name, value, options);
+        });
       },
     },
   });
@@ -42,9 +51,13 @@ export async function GET(request: Request) {
 
   if (error) {
     return NextResponse.redirect(
-      `${origin}/login?error=${encodeURIComponent(error.message)}`,
+      `${safeOrigin}/login?error=${encodeURIComponent(error.message)}`,
     );
   }
 
-  return NextResponse.redirect(`${origin}${next.startsWith("/") ? next : "/"}`);
+  const response = NextResponse.redirect(`${safeOrigin}${safeNext}`);
+  pendingCookies.forEach(({ name, value, options }) => {
+    response.cookies.set(name, value, options as never);
+  });
+  return response;
 }

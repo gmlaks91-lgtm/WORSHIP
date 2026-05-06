@@ -3,6 +3,7 @@ import "server-only";
 import { ensureRecurringSchedules } from "@/features/schedule/lib/ensureRecurringSchedules";
 import { getSetlists, type PrepSetlistRow } from "@/features/setlist/queries/getSetlists";
 import { getRecentSheetsForDashboard } from "@/features/sheets/queries/getSheets";
+import { youtubePlaylistEmbedUrl } from "@/features/team-settings/lib/youtube-playlist";
 import type { ScheduleAttendanceStatus, ScheduleKind } from "@/types/database";
 import { createClient } from "@/utils/supabase/server";
 
@@ -20,6 +21,9 @@ export type PersonalDashboardData = {
   }>;
   recentSetlists: PrepSetlistRow[];
   recentSheets: Awaited<ReturnType<typeof getRecentSheetsForDashboard>>;
+  teamPlaylistId: string | null;
+  teamPlaylistEmbedUrl: string | null;
+  canManageTeamPlaylist: boolean;
   errors: string[];
 };
 
@@ -29,6 +33,7 @@ export async function getPersonalDashboardData(): Promise<PersonalDashboardData>
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  let canManageTeamPlaylist = false;
 
   const nowIso = new Date().toISOString();
 
@@ -44,6 +49,21 @@ export async function getPersonalDashboardData(): Promise<PersonalDashboardData>
   ]);
 
   if (setlistErr) errors.push(setlistErr);
+  let teamPlaylistId: string | null = null;
+
+  if (user) {
+    const [{ data: profile, error: profileError }, { data: teamSettings, error: settingsError }] =
+      await Promise.all([
+        supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
+        supabase.from("team_settings").select("playlist_id").eq("id", true).maybeSingle(),
+      ]);
+
+    if (profileError) errors.push(profileError.message);
+    if (settingsError) errors.push(settingsError.message);
+
+    canManageTeamPlaylist = profile?.role === "leader";
+    teamPlaylistId = teamSettings?.playlist_id ?? null;
+  }
 
   let upcomingWithMine: PersonalDashboardData["upcomingWithMine"] = [];
 
@@ -89,6 +109,9 @@ export async function getPersonalDashboardData(): Promise<PersonalDashboardData>
     upcomingWithMine,
     recentSetlists: setlists,
     recentSheets: sheets,
+    teamPlaylistId,
+    teamPlaylistEmbedUrl: teamPlaylistId ? youtubePlaylistEmbedUrl(teamPlaylistId) : null,
+    canManageTeamPlaylist,
     errors,
   };
 }
