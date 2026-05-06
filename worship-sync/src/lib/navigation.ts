@@ -8,10 +8,10 @@ export type AppNavItem = {
 };
 
 export const APP_NAV_ITEMS: AppNavItem[] = [
-  { href: "/", label: "Setlists", icon: LayoutList },
-  { href: "/sheets", label: "Sheets", icon: BookOpen },
-  { href: "/schedule", label: "Schedule", icon: CalendarDays },
-  { href: "/team", label: "Team", icon: Users },
-  { href: "/board", label: "Board", icon: MessagesSquare },
-  { href: "/more", label: "More", icon: MoreHorizontal },
+  { href: "/", label: "송리스트", icon: LayoutList },
+  { href: "/sheets", label: "악보", icon: BookOpen },
+  { href: "/schedule", label: "일정", icon: CalendarDays },
+  { href: "/team", label: "팀", icon: Users },
+  { href: "/board", label: "게시판", icon: MessagesSquare },
+  { href: "/more", label: "더보기", icon: MoreHorizontal },
 ];

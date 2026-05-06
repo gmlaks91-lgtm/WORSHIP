@@ -92,7 +92,7 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
         createPrepSetlist(payload).then((result) => {
           if (!result.ok) throw new Error(result.message);
         }),
-        "Saving setlist...",
+        "콘티를 저장하는 중입니다...",
       ).unwrap();
       onOpenChange(false);
       resetForm();
@@ -117,8 +117,8 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
       >
         <div className="border-b border-border/60 px-4 py-4 sm:px-5">
           <DialogHeader className="gap-1">
-            <DialogTitle className="text-lg">Add prep setlist</DialogTitle>
-            <DialogDescription>Save songs and lineup together.</DialogDescription>
+            <DialogTitle className="text-lg">예습 콘티 추가</DialogTitle>
+            <DialogDescription>곡과 라인업을 함께 저장합니다.</DialogDescription>
           </DialogHeader>
         </div>
 
@@ -126,10 +126,10 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
           <FieldSet className="gap-5">
             <FieldGroup className="gap-5">
               <Field>
-                <FieldLabel htmlFor="setlist-title">Setlist title</FieldLabel>
+                <FieldLabel htmlFor="setlist-title">콘티 제목</FieldLabel>
                 <Input
                   id="setlist-title"
-                  placeholder="ex: Week 2 prep"
+                  placeholder="예: 5월 둘째 주 예습"
                   autoComplete="off"
                   aria-invalid={!!form.formState.errors.title}
                   {...form.register("title")}
@@ -138,7 +138,7 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
               </Field>
 
               <Field>
-                <FieldLabel>Setlist date</FieldLabel>
+                <FieldLabel>콘티 날짜</FieldLabel>
                 <Popover>
                   <PopoverTrigger
                     nativeButton={false}
@@ -154,7 +154,7 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
                     }
                   >
                     <CalendarIcon className="size-4 opacity-70" />
-                    {eventDateValue ? format(eventDateValue, "PPP", { locale: ko }) : <span>Select date</span>}
+                    {eventDateValue ? format(eventDateValue, "PPP", { locale: ko }) : <span>날짜 선택</span>}
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-2" align="start">
                     <Calendar
@@ -174,10 +174,10 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
 
             <FieldGroup className="gap-3">
               <div className="flex items-end justify-between gap-2">
-                <span className="text-sm font-medium leading-none">Songs (YouTube)</span>
+                <span className="text-sm font-medium leading-none">수록곡 (YouTube)</span>
                 <Button type="button" variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => append({ youtubeUrl: "" })}>
                   <Plus className="size-3.5" />
-                  Add row
+                  줄 추가
                 </Button>
               </div>
               <ul className="flex flex-col gap-3">
@@ -196,7 +196,7 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
                         className="shrink-0 text-muted-foreground hover:text-destructive"
                         disabled={fields.length <= 1}
                         onClick={() => remove(index)}
-                        aria-label="Delete row"
+                        aria-label="줄 삭제"
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -208,8 +208,8 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
             </FieldGroup>
 
             <FieldGroup className="gap-3">
-              <span className="text-sm font-medium leading-none">Lineup assignment</span>
-              <FieldDescription>Choose member by role. Empty value means unassigned.</FieldDescription>
+              <span className="text-sm font-medium leading-none">라인업 배정</span>
+              <FieldDescription>포지션별 섬김 멤버를 선택하세요. 비우면 미배정으로 저장됩니다.</FieldDescription>
               <ul className="grid gap-3 sm:grid-cols-2">
                 {TEAM_ROLE_OPTIONS.map((role, index) => (
                   <li key={role.code} className="rounded-lg border border-border/60 bg-card/50 p-3">
@@ -222,7 +222,7 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
                       {...form.register(`lineup.${index}.memberId` as const)}
                       defaultValue=""
                     >
-                      <option value="">Unassigned</option>
+                      <option value="">미배정</option>
                       {memberOptions.map((member) => (
                         <option key={member.id} value={member.id}>
                           {member.username}
@@ -237,16 +237,16 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
 
           <div className="flex flex-col-reverse gap-2 border-t border-border/60 pt-4 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={form.formState.isSubmitting}>
-              Cancel
+              취소
             </Button>
             <Button type="submit" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Saving...
+                  저장 중...
                 </>
               ) : (
-                "Save"
+                "저장"
               )}
             </Button>
           </div>
@@ -278,7 +278,7 @@ export function AddSetlistTriggerButton({
         onClick={() => setOpen(true)}
       >
         <Plus className="size-4" />
-        Add setlist
+        콘티 추가
       </Button>
       <AddSetlistDialog open={open} onOpenChange={setOpen} teamMembers={teamMembers} />
     </>

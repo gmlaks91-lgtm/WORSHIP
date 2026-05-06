@@ -54,7 +54,7 @@ function LineupEditorDialog({ setlistId, current, members }: LineupEditorProps) 
           }).then((res) => {
             if (!res.ok) throw new Error(res.message);
           }),
-          "Saving lineup...",
+          "라인업을 저장하는 중입니다...",
         ).unwrap();
         setOpen(false);
       } catch {
@@ -71,11 +71,11 @@ function LineupEditorDialog({ setlistId, current, members }: LineupEditorProps) 
         if (next) setDraft(initial);
       }}
     >
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>Edit lineup</DialogTrigger>
+      <DialogTrigger render={<Button variant="outline" size="sm" />}>라인업 수정</DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Lineup assignment</DialogTitle>
-          <DialogDescription>Pick serving members by role.</DialogDescription>
+          <DialogTitle>라인업 배정</DialogTitle>
+          <DialogDescription>포지션별 섬김 멤버를 선택하세요.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 sm:grid-cols-2">
           {draft.map((item, index) => (
@@ -90,7 +90,7 @@ function LineupEditorDialog({ setlistId, current, members }: LineupEditorProps) 
                   setDraft(next);
                 }}
               >
-                <option value="">Unassigned</option>
+                <option value="">미배정</option>
                 {members.map((m) => (
                   <option key={m.id} value={m.id}>{m.username}</option>
                 ))}
@@ -99,8 +99,8 @@ function LineupEditorDialog({ setlistId, current, members }: LineupEditorProps) 
           ))}
         </div>
         <div className="flex justify-end gap-2 pt-2">
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>Cancel</Button>
-          <Button onClick={onSave} disabled={pending}>Save</Button>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>취소</Button>
+          <Button onClick={onSave} disabled={pending}>저장</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -120,8 +120,8 @@ export function PrepSetlistSection({
       <section id="prep-setlists" className="scroll-mt-8 rounded-lg border border-border/80 bg-card p-6 shadow-sm sm:p-7">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-sm font-medium text-foreground">Prep setlists</h2>
-            <p className="text-xs text-muted-foreground">Setlists with prep status and their songs.</p>
+            <h2 className="text-sm font-medium text-foreground">예습 콘티</h2>
+            <p className="text-xs text-muted-foreground">prep 상태 콘티와 수록곡을 확인하세요.</p>
           </div>
           {canManageSetlists ? (
             <AddSetlistTriggerButton
@@ -135,13 +135,13 @@ export function PrepSetlistSection({
 
         {error ? (
           <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3.5 text-sm text-destructive">
-            Failed to load data: {error}
+            데이터를 불러오지 못했습니다: {error}
           </div>
         ) : null}
 
         {!hasLists && !error ? (
           <div className="mt-6 flex min-h-[160px] items-center justify-center rounded-lg border border-dashed border-border/90 bg-muted/30 px-5 py-10 text-center text-sm text-muted-foreground">
-            No prep setlists yet.
+            아직 예습 콘티가 없습니다.
           </div>
         ) : null}
 
@@ -164,9 +164,9 @@ export function PrepSetlistSection({
                 </div>
 
                 <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
-                  <p className="mb-2 text-xs font-medium text-muted-foreground">Lineup</p>
+                  <p className="mb-2 text-xs font-medium text-muted-foreground">라인업</p>
                   {list.lineup.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No lineup assigned yet.</p>
+                    <p className="text-sm text-muted-foreground">아직 라인업이 배정되지 않았습니다.</p>
                   ) : (
                     <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                       {list.lineup.map((item) => (
@@ -197,4 +197,3 @@ export function PrepSetlistSection({
     </>
   );
 }
-

@@ -18,7 +18,7 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
   const parsed = createPrepSetlistPayloadSchema.safeParse(raw);
   if (!parsed.success) {
     const msg = parsed.error.issues.map((i) => i.message).join(", ");
-    return { ok: false, message: msg || "Invalid input." };
+    return { ok: false, message: msg || "입력값을 확인해 주세요." };
   }
 
   const { title, eventDate, tracks, lineup } = parsed.data;
@@ -35,7 +35,7 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
       .single();
 
     if (setlistError || !setlist) {
-      return { ok: false, message: setlistError?.message ?? "Failed to create setlist." };
+      return { ok: false, message: setlistError?.message ?? "콘티를 생성하지 못했습니다." };
     }
 
     const setlistId = setlist.id;
@@ -59,7 +59,7 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
       const videoId = getYoutubeVideoId(track.youtubeUrl);
       if (!videoId) {
         await supabase.from("setlists").delete().eq("id", setlistId);
-        return { ok: false, message: "Invalid YouTube URL included." };
+        return { ok: false, message: "유효하지 않은 YouTube URL이 포함되어 있습니다." };
       }
 
       let songId = byVideoId.get(videoId);
@@ -76,7 +76,7 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
 
         if (insertSongError || !inserted) {
           await supabase.from("setlists").delete().eq("id", setlistId);
-          return { ok: false, message: insertSongError?.message ?? "Failed to create song." };
+          return { ok: false, message: insertSongError?.message ?? "곡을 생성하지 못했습니다." };
         }
 
         songId = inserted.id;
@@ -116,7 +116,7 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
     revalidatePath("/");
     return { ok: true };
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Unknown error.";
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { ok: false, message };
   }
 }
@@ -148,7 +148,7 @@ export async function upsertSetlistLineup(raw: {
     revalidatePath("/");
     return { ok: true };
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Unknown error.";
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
     return { ok: false, message };
   }
 }

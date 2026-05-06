@@ -1,4 +1,4 @@
-import { PersonalDashboard } from "@/features/dashboard/components/PersonalDashboard";
+﻿import { PersonalDashboard } from "@/features/dashboard/components/PersonalDashboard";
 import { getPersonalDashboardData } from "@/features/dashboard/queries/getPersonalDashboardData";
 import { PrepSetlistSection } from "@/features/setlist/components/PrepSetlistSection";
 import { getSetlists } from "@/features/setlist/queries/getSetlists";
@@ -48,9 +48,9 @@ export default async function SmartSetlistDashboardPage() {
     <div className="flex flex-1 flex-col gap-10">
       <section className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Ahaba</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">Smart Setlist</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">스마트 송리스트</h1>
         <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
-          Prep setlists, lineup assignments, and sheets in one place.
+          예습 콘티, 라인업 배정, 악보를 한곳에서 관리하세요.
         </p>
       </section>
 

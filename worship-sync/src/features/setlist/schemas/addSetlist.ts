@@ -20,8 +20,8 @@ const roleCodeSchema = z.enum(teamRoleCodeValues);
 export const addSetlistTrackSchema = z.object({
   youtubeUrl: z
     .string()
-    .min(1, "YouTube URL is required")
-    .refine((u) => !!getYoutubeVideoId(u), "Invalid YouTube URL"),
+    .min(1, "YouTube URL을 입력하세요")
+    .refine((u) => !!getYoutubeVideoId(u), "유효하지 않은 YouTube URL입니다"),
 });
 
 export const lineupAssignSchema = z.object({
@@ -30,9 +30,9 @@ export const lineupAssignSchema = z.object({
 });
 
 export const addSetlistFormSchema = z.object({
-  title: z.string().min(1, "Setlist title is required"),
+  title: z.string().min(1, "콘티 제목을 입력하세요"),
   eventDate: z.date(),
-  tracks: z.array(addSetlistTrackSchema).min(1, "Add at least one song"),
+  tracks: z.array(addSetlistTrackSchema).min(1, "최소 한 곡 이상 추가하세요"),
   lineup: z.array(lineupAssignSchema),
 });
 
@@ -40,7 +40,7 @@ export type AddSetlistFormValues = z.infer<typeof addSetlistFormSchema>;
 
 export const createPrepSetlistPayloadSchema = z.object({
   title: z.string().min(1),
-  eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
+  eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "날짜 형식이 올바르지 않습니다"),
   tracks: z.array(addSetlistTrackSchema).min(1),
   lineup: z.array(lineupAssignSchema),
 });

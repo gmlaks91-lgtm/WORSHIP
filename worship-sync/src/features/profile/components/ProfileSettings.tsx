@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Loader2, PencilLine, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 function roleLabel(role: "leader" | "member") {
-  return role === "leader" ? "Leader" : "Member";
+  return role === "leader" ? "리더" : "팀원";
 }
 
 export function ProfileSettings({ profile }: { profile: MyProfileRow }) {
@@ -31,7 +31,7 @@ export function ProfileSettings({ profile }: { profile: MyProfileRow }) {
 
   const onSaveProfile = () => {
     const next = username.trim();
-    if (!next) return toastError("Name is required.");
+    if (!next) return toastError("이름을 입력해 주세요.");
 
     startSaveTransition(async () => {
       try {
@@ -39,7 +39,7 @@ export function ProfileSettings({ profile }: { profile: MyProfileRow }) {
           updateProfile({ username: next, rolePriority1: role1 || null, rolePriority2: role2 || null, rolePriority3: role3 || null }).then((res) => {
             if (!res.ok) throw new Error(res.message);
           }),
-          "Saving profile...",
+          "프로필을 저장하는 중입니다...",
         ).unwrap();
         setOpenEdit(false);
         router.refresh();
@@ -63,7 +63,7 @@ export function ProfileSettings({ profile }: { profile: MyProfileRow }) {
           updateAvatar(fd).then((res) => {
             if (!res.ok) throw new Error(res.message);
           }),
-          "Uploading image...",
+          "이미지를 업로드하는 중입니다...",
         ).unwrap();
         router.refresh();
       } catch {
@@ -76,7 +76,7 @@ export function ProfileSettings({ profile }: { profile: MyProfileRow }) {
     <div className="space-y-8">
       <section className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
         <div className="relative">
-          <button type="button" onClick={onPickAvatar} disabled={pendingAvatar} className={cn("group relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring", "disabled:opacity-60")} aria-label="Change avatar">
+          <button type="button" onClick={onPickAvatar} disabled={pendingAvatar} className={cn("group relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring", "disabled:opacity-60")} aria-label="프로필 이미지 변경">
             <Avatar className="size-28 border-2 border-border/60 shadow-sm sm:size-32">
               {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" className="object-cover" /> : null}
               <AvatarFallback className="bg-muted text-lg font-semibold"><UserRound className="size-10 text-muted-foreground" aria-hidden /></AvatarFallback>
@@ -89,40 +89,40 @@ export function ProfileSettings({ profile }: { profile: MyProfileRow }) {
         </div>
         <div className="flex flex-1 flex-col gap-2 text-center sm:text-left">
           <p className="text-lg font-semibold tracking-tight">{profile.username}</p>
-          <p className="text-sm text-muted-foreground">Permission: <span className="font-medium text-foreground">{roleLabel(profile.role)}</span></p>
-          <p className="text-sm text-muted-foreground">Roles: {teamRoleLabel(profile.role_priority_1)} / {teamRoleLabel(profile.role_priority_2)} / {teamRoleLabel(profile.role_priority_3)}</p>
-          <p className="text-xs text-muted-foreground">Click avatar to upload PNG/JPG/WebP/GIF (max 5MB).</p>
+          <p className="text-sm text-muted-foreground">권한: <span className="font-medium text-foreground">{roleLabel(profile.role)}</span></p>
+          <p className="text-sm text-muted-foreground">역할: {teamRoleLabel(profile.role_priority_1)} / {teamRoleLabel(profile.role_priority_2)} / {teamRoleLabel(profile.role_priority_3)}</p>
+          <p className="text-xs text-muted-foreground">프로필 이미지를 눌러 PNG/JPG/WebP/GIF를 업로드할 수 있습니다. (최대 5MB)</p>
         </div>
       </section>
 
       <section className="space-y-4 rounded-lg border border-border/60 bg-card/70 p-5 shadow-sm sm:p-6">
-        <h2 className="text-sm font-medium text-foreground">Profile</h2>
-        <p className="text-xs text-muted-foreground">Update your display name and role priorities.</p>
+        <h2 className="text-sm font-medium text-foreground">프로필 수정</h2>
+        <p className="text-xs text-muted-foreground">표시 이름과 역할 우선순위를 수정할 수 있습니다.</p>
         <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-          <DialogTrigger render={<Button type="button" variant="outline" className="w-full sm:w-auto" />}>Edit profile</DialogTrigger>
+          <DialogTrigger render={<Button type="button" variant="outline" className="w-full sm:w-auto" />}>프로필 열기</DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Edit profile</DialogTitle>
-              <DialogDescription>Set your name and role preference order.</DialogDescription>
+              <DialogTitle>프로필 수정</DialogTitle>
+              <DialogDescription>내 이름과 역할 1/2/3순위를 설정합니다.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label htmlFor="profile-username" className="text-xs font-medium text-muted-foreground">Name</label>
+                <label htmlFor="profile-username" className="text-xs font-medium text-muted-foreground">이름</label>
                 <Input id="profile-username" value={username} onChange={(e) => setUsername(e.target.value)} disabled={pendingSave} maxLength={80} />
               </div>
-              {[{ v: role1, s: setRole1, l: "Priority 1" }, { v: role2, s: setRole2, l: "Priority 2" }, { v: role3, s: setRole3, l: "Priority 3" }].map((item) => (
+              {[{ v: role1, s: setRole1, l: "역할 1순위" }, { v: role2, s: setRole2, l: "역할 2순위" }, { v: role3, s: setRole3, l: "역할 3순위" }].map((item) => (
                 <div className="space-y-1.5" key={item.l}>
                   <label className="text-xs font-medium text-muted-foreground">{item.l}</label>
                   <select value={item.v} onChange={(e) => item.s(e.target.value)} className={cn("h-10 w-full rounded-lg border border-input bg-background px-3 text-sm", "outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40")}>
-                    <option value="">None</option>
+                    <option value="">선택 안 함</option>
                     {TEAM_ROLE_OPTIONS.map((role) => <option key={role.code} value={role.code}>{role.label}</option>)}
                   </select>
                 </div>
               ))}
             </div>
             <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" onClick={() => setOpenEdit(false)} disabled={pendingSave}>Cancel</Button>
-              <Button type="button" onClick={onSaveProfile} disabled={pendingSave}>{pendingSave ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}Save</Button>
+              <Button type="button" variant="outline" onClick={() => setOpenEdit(false)} disabled={pendingSave}>취소</Button>
+              <Button type="button" onClick={onSaveProfile} disabled={pendingSave}>{pendingSave ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}저장</Button>
             </div>
           </DialogContent>
         </Dialog>

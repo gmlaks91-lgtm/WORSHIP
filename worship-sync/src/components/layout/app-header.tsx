@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 import { AppHeaderActions } from "@/components/layout/app-header-actions";
 import { cn } from "@/lib/utils";
@@ -36,12 +36,12 @@ export async function AppHeader({ className }: AppHeaderProps) {
       <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-3 px-5 sm:h-16 sm:px-7">
         <Link href="/" className="group flex flex-col gap-0.5 transition-opacity hover:opacity-90">
           <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            Team
+            찬양팀
           </span>
           <span className="text-base font-semibold tracking-tight text-foreground sm:text-lg">Ahaba</span>
         </Link>
         <div className="flex items-center gap-2">
-          <span className="hidden text-xs text-muted-foreground lg:inline">Ahaba Team</span>
+          <span className="hidden text-xs text-muted-foreground lg:inline">아하바 찬양팀</span>
           <AppHeaderActions canManageSetlists={canManageSetlists} teamMembers={teamMembers} />
         </div>
       </div>
