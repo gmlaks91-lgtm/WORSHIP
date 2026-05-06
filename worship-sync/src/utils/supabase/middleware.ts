@@ -27,6 +27,12 @@ export async function updateSession(request: NextRequest): Promise<SessionUpdate
   }
 
   const supabase = createServerClient<Database>(url, key, {
+    auth: {
+      flowType: "pkce",
+      detectSessionInUrl: false,
+      persistSession: true,
+      autoRefreshToken: false,
+    },
     cookies: {
       getAll() {
         return request.cookies.getAll();

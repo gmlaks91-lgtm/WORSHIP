@@ -34,6 +34,12 @@ export async function GET(request: Request) {
   }> = [];
   const cookieStore = await cookies();
   const supabase = createServerClient<Database>(url, key, {
+    auth: {
+      flowType: "pkce",
+      detectSessionInUrl: false,
+      persistSession: true,
+      autoRefreshToken: false,
+    },
     cookies: {
       getAll() {
         return cookieStore.getAll();

@@ -12,5 +12,12 @@ export function createClient() {
     );
   }
 
-  return createBrowserClient<Database>(url, key);
+  return createBrowserClient<Database>(url, key, {
+    auth: {
+      flowType: "pkce",
+      detectSessionInUrl: true,
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  });
 }

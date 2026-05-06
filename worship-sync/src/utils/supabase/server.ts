@@ -16,6 +16,12 @@ export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(url, key, {
+    auth: {
+      flowType: "pkce",
+      detectSessionInUrl: false,
+      persistSession: true,
+      autoRefreshToken: false,
+    },
     cookies: {
       getAll() {
         return cookieStore.getAll();

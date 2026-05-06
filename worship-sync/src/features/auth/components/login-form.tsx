@@ -109,7 +109,8 @@ export function LoginForm({ className }: { className?: string }) {
 
   const onGoogle = async () => {
     const supabase = createClient();
-    const origin = window.location.origin;
+    const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+    const origin = configuredOrigin || window.location.origin;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}` },
