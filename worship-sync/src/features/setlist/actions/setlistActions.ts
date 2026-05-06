@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { revalidatePath } from "next/cache";
 
@@ -13,6 +13,19 @@ import type { TeamRoleCode } from "@/types/database";
 import { createClient } from "@/utils/supabase/server";
 
 export type CreatePrepSetlistResult = { ok: true } | { ok: false; message: string };
+
+function buildLineupRows(
+  setlistId: string,
+  lineup: Array<{ roleCode: TeamRoleCode; memberIds: string[] }>,
+) {
+  return lineup.flatMap((item) =>
+    item.memberIds.map((memberId) => ({
+      setlist_id: setlistId,
+      role_code: item.roleCode,
+      member_id: memberId,
+    })),
+  );
+}
 
 export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<CreatePrepSetlistResult> {
   const parsed = createPrepSetlistPayloadSchema.safeParse(raw);
@@ -97,13 +110,10 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
       return { ok: false, message: junctionError.message };
     }
 
-    const lineupRows = lineup
-      .filter((item) => item.memberId)
-      .map((item) => ({
-        setlist_id: setlistId,
-        role_code: item.roleCode as TeamRoleCode,
-        member_id: item.memberId!,
-      }));
+    const lineupRows = buildLineupRows(
+      setlistId,
+      lineup.map((item) => ({ roleCode: item.roleCode, memberIds: item.memberIds })),
+    );
 
     if (lineupRows.length > 0) {
       const { error: lineupErr } = await supabase.from("setlist_lineups").insert(lineupRows);
@@ -123,7 +133,7 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
 
 export async function upsertSetlistLineup(raw: {
   setlistId: string;
-  lineup: Array<{ roleCode: TeamRoleCode; memberId: string | null }>;
+  lineup: Array<{ roleCode: TeamRoleCode; memberIds: string[] }>;
 }): Promise<CreatePrepSetlistResult> {
   try {
     const supabase = await createClient();
@@ -136,9 +146,7 @@ export async function upsertSetlistLineup(raw: {
       .eq("setlist_id", raw.setlistId);
     if (delErr) return { ok: false, message: delErr.message };
 
-    const rows = raw.lineup
-      .filter((l) => l.memberId)
-      .map((l) => ({ setlist_id: raw.setlistId, role_code: l.roleCode, member_id: l.memberId! }));
+    const rows = buildLineupRows(raw.setlistId, raw.lineup);
 
     if (rows.length > 0) {
       const { error: insErr } = await supabase.from("setlist_lineups").insert(rows);

@@ -1,6 +1,6 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 
-import { TEAM_ROLE_OPTIONS } from "@/lib/team-roles";
+import { MULTI_MEMBER_ROLE_CODES, TEAM_ROLE_OPTIONS } from "@/lib/team-roles";
 import { getYoutubeVideoId } from "@/features/setlist/utils/youtube";
 
 const teamRoleCodeValues = TEAM_ROLE_OPTIONS.map((r) => r.code) as [
@@ -24,10 +24,20 @@ export const addSetlistTrackSchema = z.object({
     .refine((u) => !!getYoutubeVideoId(u), "유효하지 않은 YouTube URL입니다"),
 });
 
-export const lineupAssignSchema = z.object({
-  roleCode: roleCodeSchema,
-  memberId: z.string().uuid().nullable(),
-});
+export const lineupAssignSchema = z
+  .object({
+    roleCode: roleCodeSchema,
+    memberIds: z.array(z.string().uuid()),
+  })
+  .superRefine((value, ctx) => {
+    const isMulti = MULTI_MEMBER_ROLE_CODES.includes(value.roleCode);
+    if (!isMulti && value.memberIds.length > 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `${value.roleCode} 역할은 한 명만 선택할 수 있습니다`,
+      });
+    }
+  });
 
 export const addSetlistFormSchema = z.object({
   title: z.string().min(1, "콘티 제목을 입력하세요"),

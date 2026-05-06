@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -12,7 +12,7 @@ import {
   addSetlistFormSchema,
   type AddSetlistFormValues,
 } from "@/features/setlist/schemas/addSetlist";
-import { TEAM_ROLE_OPTIONS, teamRoleLabel } from "@/lib/team-roles";
+import { isMultiMemberRole, TEAM_ROLE_OPTIONS, teamRoleLabel, type TeamRoleCode } from "@/lib/team-roles";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -47,7 +47,57 @@ type AddSetlistDialogProps = {
 };
 
 function makeDefaultLineup() {
-  return TEAM_ROLE_OPTIONS.map((role) => ({ roleCode: role.code, memberId: null }));
+  return TEAM_ROLE_OPTIONS.map((role) => ({ roleCode: role.code, memberIds: [] as string[] }));
+}
+
+function RoleMemberField({
+  value,
+  onChange,
+  roleCode,
+  members,
+}: {
+  value: string[];
+  onChange: (next: string[]) => void;
+  roleCode: TeamRoleCode;
+  members: LineupMemberOption[];
+}) {
+  if (isMultiMemberRole(roleCode)) {
+    return (
+      <div className="max-h-32 space-y-1 overflow-y-auto rounded-lg border border-input bg-background p-2">
+        {members.map((member) => {
+          const checked = value.includes(member.id);
+          return (
+            <label key={member.id} className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted/40">
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={(e) => {
+                  if (e.target.checked) onChange([...value, member.id]);
+                  else onChange(value.filter((id) => id !== member.id));
+                }}
+              />
+              <span className="text-sm">{member.username}</span>
+            </label>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <select
+      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+      value={value[0] ?? ""}
+      onChange={(e) => onChange(e.target.value ? [e.target.value] : [])}
+    >
+      <option value="">미배정</option>
+      {members.map((member) => (
+        <option key={member.id} value={member.id}>
+          {member.username}
+        </option>
+      ))}
+    </select>
+  );
 }
 
 export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlistDialogProps) {
@@ -67,6 +117,7 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
   });
 
   const eventDateValue = useWatch({ control: form.control, name: "eventDate" });
+  const lineupValues = useWatch({ control: form.control, name: "lineup" }) ?? makeDefaultLineup();
 
   const resetForm = () => {
     form.reset({
@@ -84,7 +135,7 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
       tracks: values.tracks.map((t) => ({
         youtubeUrl: t.youtubeUrl.trim(),
       })),
-      lineup: values.lineup.map((l) => ({ roleCode: l.roleCode, memberId: l.memberId || null })),
+      lineup: values.lineup.map((l) => ({ roleCode: l.roleCode, memberIds: l.memberIds })),
     };
 
     try {
@@ -209,28 +260,29 @@ export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlist
 
             <FieldGroup className="gap-3">
               <span className="text-sm font-medium leading-none">라인업 배정</span>
-              <FieldDescription>포지션별 섬김 멤버를 선택하세요. 비우면 미배정으로 저장됩니다.</FieldDescription>
+              <FieldDescription>
+                V(보컬), STAFF(스텝)는 여러 명을 동시에 선택할 수 있습니다.
+              </FieldDescription>
               <ul className="grid gap-3 sm:grid-cols-2">
-                {TEAM_ROLE_OPTIONS.map((role, index) => (
-                  <li key={role.code} className="rounded-lg border border-border/60 bg-card/50 p-3">
-                    <input type="hidden" {...form.register(`lineup.${index}.roleCode` as const)} value={role.code} />
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                      {teamRoleLabel(role.code)}
-                    </label>
-                    <select
-                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
-                      {...form.register(`lineup.${index}.memberId` as const)}
-                      defaultValue=""
-                    >
-                      <option value="">미배정</option>
-                      {memberOptions.map((member) => (
-                        <option key={member.id} value={member.id}>
-                          {member.username}
-                        </option>
-                      ))}
-                    </select>
-                  </li>
-                ))}
+                {TEAM_ROLE_OPTIONS.map((role, index) => {
+                  const current = lineupValues[index]?.memberIds ?? [];
+                  return (
+                    <li key={role.code} className="rounded-lg border border-border/60 bg-card/50 p-3">
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                        {teamRoleLabel(role.code)}
+                      </label>
+                      <RoleMemberField
+                        value={current}
+                        roleCode={role.code}
+                        members={memberOptions}
+                        onChange={(next) => {
+                          form.setValue(`lineup.${index}.roleCode`, role.code, { shouldValidate: true });
+                          form.setValue(`lineup.${index}.memberIds`, next, { shouldValidate: true });
+                        }}
+                      />
+                    </li>
+                  );
+                })}
               </ul>
             </FieldGroup>
           </FieldSet>

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { ensureRecurringSchedules } from "@/features/schedule/lib/ensureRecurringSchedules";
 import type { ScheduleAttendanceStatus, ScheduleKind } from "@/types/database";
 import { createClient } from "@/utils/supabase/server";
 
@@ -26,6 +27,12 @@ export type ScheduleAttendanceRow = {
 export async function getSchedulesPageData() {
   const supabase = await createClient();
   const nowIso = new Date().toISOString();
+
+  try {
+    await ensureRecurringSchedules(supabase);
+  } catch {
+    // 반복 일정 자동 생성 실패는 전체 조회를 막지 않음
+  }
 
   const [
     { data: schedulesRaw, error: sErr },
