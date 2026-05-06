@@ -4,10 +4,9 @@ import { useCallback, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Loader2, UploadCloud } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { registerSheet } from "@/features/sheets/actions/sheetActions";
+
+import { uploadSheetFromClient } from "@/features/sheets/lib/client-upload-sheet";
 import { toastError, toastPromise } from "@/lib/app-toast";
-import { extensionFromFile } from "@/features/sheets/lib/file-kind";
-import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,6 +24,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
+const EMPTY_SONGS: Array<{ id: string; title: string }> = [];
+
 const ACCEPT = {
   "application/pdf": [".pdf"],
   "image/png": [".png"],
@@ -33,25 +34,47 @@ const ACCEPT = {
   "image/gif": [".gif"],
 } as const;
 
-type UploadSheetModalProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  songId: string;
-  songTitle: string;
-};
+export type UploadSheetModalProps =
+  | {
+      open: boolean;
+      onOpenChange: (open: boolean) => void;
+      mode: "song";
+      songId: string;
+      songTitle: string;
+    }
+  | {
+      open: boolean;
+      onOpenChange: (open: boolean) => void;
+      mode: "library";
+      songs: Array<{ id: string; title: string }>;
+    };
 
-export function UploadSheetModal({
-  open,
-  onOpenChange,
-  songId,
-  songTitle,
-}: UploadSheetModalProps) {
+export function UploadSheetModal(props: UploadSheetModalProps) {
   const router = useRouter();
+  const { open, onOpenChange, mode } = props;
+
+  const [selectedSongId, setSelectedSongId] = useState("");
+  const [songQuery, setSongQuery] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [memo, setMemo] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const songId = mode === "song" ? props.songId : selectedSongId;
+  const songTitle =
+    mode === "song"
+      ? props.songTitle
+      : props.songs.find((s) => s.id === selectedSongId)?.title ?? "";
+
+  const librarySongList = mode === "library" ? props.songs : EMPTY_SONGS;
+  const filteredSongs = useMemo(() => {
+    const q = songQuery.trim().toLowerCase();
+    if (!q) return librarySongList;
+    return librarySongList.filter((s) => s.title.toLowerCase().includes(q));
+  }, [librarySongList, songQuery]);
+
   const reset = useCallback(() => {
+    setSelectedSongId("");
+    setSongQuery("");
     setFile(null);
     setMemo("");
   }, []);
@@ -75,6 +98,10 @@ export function UploadSheetModal({
   }, [file]);
 
   const onSubmit = async () => {
+    if (!songId) {
+      toastError("곡을 먼저 선택해 주세요.");
+      return;
+    }
     if (!file) {
       toastError("업로드할 파일을 선택해 주세요.");
       return;
@@ -83,36 +110,7 @@ export function UploadSheetModal({
     setBusy(true);
     try {
       await toastPromise(
-        (async () => {
-          const supabase = createClient();
-          const {
-            data: { user },
-          } = await supabase.auth.getUser();
-
-          if (!user) throw new Error("로그인이 필요합니다.");
-
-          const ext = extensionFromFile(file);
-          const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-
-          const { error: uploadError } = await supabase.storage.from("sheets").upload(path, file, {
-            cacheControl: "3600",
-            upsert: false,
-            contentType: file.type || undefined,
-          });
-
-          if (uploadError) throw new Error(uploadError.message);
-
-          const { data: pub } = supabase.storage.from("sheets").getPublicUrl(path);
-          const publicUrl = pub.publicUrl;
-
-          const result = await registerSheet({
-            songId,
-            fileUrl: publicUrl,
-            memo: memo.trim().length ? memo.trim() : undefined,
-          });
-
-          if (!result.ok) throw new Error(result.message);
-        })(),
+        uploadSheetFromClient(songId, file, memo),
         "악보를 업로드하는 중이에요…",
       ).unwrap();
 
@@ -126,6 +124,9 @@ export function UploadSheetModal({
     }
   };
 
+  const canPickSong = mode === "library" && props.songs.length > 0;
+  const noSongsInDb = mode === "library" && props.songs.length === 0;
+
   return (
     <Dialog
       open={open}
@@ -136,15 +137,86 @@ export function UploadSheetModal({
       <DialogContent className="max-w-md gap-0 overflow-hidden p-0">
         <div className="border-b border-border/60 px-4 py-4 sm:px-5">
           <DialogHeader className="gap-1">
-            <DialogTitle className="text-base">악보 등록</DialogTitle>
+            <DialogTitle className="text-base">
+              {mode === "library" ? "악보 추가" : "악보 등록"}
+            </DialogTitle>
             <DialogDescription className="text-xs leading-relaxed">
-              <span className="font-medium text-foreground">{songTitle}</span> 곡에 PDF 또는 이미지를
-              연결합니다.
+              {mode === "song" ? (
+                <>
+                  <span className="font-medium text-foreground">{props.songTitle}</span> 곡에 PDF 또는
+                  이미지를 연결합니다.
+                </>
+              ) : (
+                <>등록된 곡을 고른 뒤, PDF 또는 이미지 파일을 올려 주세요.</>
+              )}
             </DialogDescription>
           </DialogHeader>
         </div>
 
-        <div className="flex flex-col gap-4 px-4 py-4 sm:px-5">
+        <div className="flex max-h-[min(85vh,640px)] flex-col gap-4 overflow-y-auto px-4 py-4 sm:px-5">
+          {mode === "library" ? (
+            <FieldSet className="gap-2">
+              <FieldLabel className="text-xs font-medium text-foreground">곡 선택</FieldLabel>
+              {noSongsInDb ? (
+                <p className="rounded-lg border border-dashed border-border/70 bg-muted/20 px-3 py-3 text-xs text-muted-foreground">
+                  아직 등록된 곡이 없습니다. 홈에서 콘티를 추가해 곡을 만든 뒤 다시 시도해 주세요.
+                </p>
+              ) : (
+                <>
+                  <Input
+                    value={songQuery}
+                    onChange={(e) => setSongQuery(e.target.value)}
+                    disabled={busy}
+                    placeholder="곡 이름 검색…"
+                    className="h-9 text-sm"
+                    aria-label="곡 검색"
+                  />
+                  <div
+                    className="max-h-36 overflow-y-auto rounded-xl border border-border/60 bg-muted/10 p-1.5"
+                    role="listbox"
+                    aria-label="곡 목록"
+                  >
+                    {filteredSongs.length === 0 ? (
+                      <p className="px-2 py-3 text-center text-xs text-muted-foreground">
+                        검색 결과가 없습니다.
+                      </p>
+                    ) : (
+                      <ul className="space-y-0.5">
+                        {filteredSongs.map((s) => {
+                          const active = selectedSongId === s.id;
+                          return (
+                            <li key={s.id}>
+                              <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() => setSelectedSongId(s.id)}
+                                className={cn(
+                                  "flex w-full rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
+                                  active
+                                    ? "bg-primary text-primary-foreground shadow-sm"
+                                    : "hover:bg-muted/80",
+                                )}
+                              >
+                                <span className="line-clamp-2 font-medium">{s.title}</span>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                  {selectedSongId ? (
+                    <p className="text-[11px] text-muted-foreground">
+                      선택: <span className="font-medium text-foreground">{songTitle}</span>
+                    </p>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground">목록에서 곡을 한 번 눌러 선택하세요.</p>
+                  )}
+                </>
+              )}
+            </FieldSet>
+          ) : null}
+
           <FieldSet className="gap-3">
             <Field className="gap-2">
               <FieldLabel>파일</FieldLabel>
@@ -179,7 +251,7 @@ export function UploadSheetModal({
                 <span className="text-[11px] text-muted-foreground">또는</span>
                 <Input
                   type="file"
-                  accept="application/pdf,image/*"
+                  accept="application/pdf,image/png,image/jpeg,image/webp,image/gif"
                   disabled={busy}
                   className="h-8 flex-1 text-xs file:mr-2 file:text-xs"
                   onChange={(e) => {
@@ -204,7 +276,7 @@ export function UploadSheetModal({
                   "disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30",
                 )}
               />
-              <FieldDescription>태블릿 뷰어 상단에 작게 표시됩니다.</FieldDescription>
+              <FieldDescription>뷰어 상단에 작게 표시됩니다.</FieldDescription>
             </Field>
           </FieldSet>
 
@@ -216,7 +288,12 @@ export function UploadSheetModal({
               type="button"
               className="gap-1.5"
               onClick={onSubmit}
-              disabled={busy || !file}
+              disabled={
+                busy ||
+                !file ||
+                !songId ||
+                (mode === "library" && !canPickSong)
+              }
             >
               {busy ? (
                 <>
@@ -244,6 +321,7 @@ export function UploadSheetTriggerButton({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [dialogKey, setDialogKey] = useState(0);
   return (
     <>
       <Button
@@ -251,11 +329,21 @@ export function UploadSheetTriggerButton({
         variant="secondary"
         size="sm"
         className={className}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setDialogKey((k) => k + 1);
+          setOpen(true);
+        }}
       >
         악보 등록
       </Button>
-      <UploadSheetModal open={open} onOpenChange={setOpen} songId={songId} songTitle={songTitle} />
+      <UploadSheetModal
+        key={dialogKey}
+        open={open}
+        onOpenChange={setOpen}
+        mode="song"
+        songId={songId}
+        songTitle={songTitle}
+      />
     </>
   );
 }
