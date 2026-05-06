@@ -1,4 +1,4 @@
-export type TeamRoleCode = "L" | "M" | "S" | "D" | "A/G" | "B/G" | "E/G" | "V" | "STAFF";
+ï»¿export type TeamRoleCode = "L" | "M" | "S" | "D" | "A/G" | "B/G" | "E/G" | "V" | "STAFF";
 
 export type TeamRoleOption = {
   code: TeamRoleCode;
@@ -6,20 +6,21 @@ export type TeamRoleOption = {
 };
 
 export const TEAM_ROLE_OPTIONS: TeamRoleOption[] = [
-  { code: "L", label: "L ¡¤ ¸®´õ" },
-  { code: "M", label: "M ¡¤ ¸ŞÀÎ °Ç¹İ" },
-  { code: "S", label: "S ¡¤ ¼¼ÄÁ°Ç¹İ" },
-  { code: "D", label: "D ¡¤ µå·³" },
-  { code: "A/G", label: "A/G ¡¤ ¾îÄí½ºÆ½ ±âÅ¸" },
-  { code: "B/G", label: "B/G ¡¤ º£ÀÌ½º ±âÅ¸" },
-  { code: "E/G", label: "E/G ¡¤ ÀÏ·º ±âÅ¸" },
-  { code: "V", label: "V ¡¤ º¸ÄÃ" },
-  { code: "STAFF", label: "STAFF ¡¤ À½Çâ/Á¶¸í/PPT" },
+  { code: "L", label: "L Â· ë¦¬ë”" },
+  { code: "M", label: "M Â· ë©”ì¸ ê±´ë°˜" },
+  { code: "S", label: "S Â· ì„¸ì»¨ê±´ë°˜" },
+  { code: "D", label: "D Â· ë“œëŸ¼" },
+  { code: "A/G", label: "A/G Â· ì–´ì¿ ìŠ¤í‹± ê¸°íƒ€" },
+  { code: "B/G", label: "B/G Â· ë² ì´ìŠ¤ ê¸°íƒ€" },
+  { code: "E/G", label: "E/G Â· ì¼ë ‰ ê¸°íƒ€" },
+  { code: "V", label: "V Â· ë³´ì»¬" },
+  { code: "STAFF", label: "STAFF Â· ìŒí–¥/ì¡°ëª…/PPT" },
 ];
 
 export const TEAM_ROLE_CODE_SET = new Set<TeamRoleCode>(TEAM_ROLE_OPTIONS.map((r) => r.code));
 
 export function teamRoleLabel(code: TeamRoleCode | null | undefined) {
-  if (!code) return "¹ÌÁ¤";
+  if (!code) return "ë¯¸ì •";
   return TEAM_ROLE_OPTIONS.find((r) => r.code === code)?.label ?? code;
 }
+

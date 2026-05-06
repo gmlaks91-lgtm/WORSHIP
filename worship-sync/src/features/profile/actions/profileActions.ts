@@ -1,4 +1,4 @@
-"use server";
+ï»¿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -12,8 +12,8 @@ export type ProfileActionResult = { ok: true } | { ok: false; message: string };
 const usernameSchema = z
   .string()
   .trim()
-  .min(1, "ÀÌ¸§À» ÀÔ·ÂÇÏ¼¼¿ä.")
-  .max(80, "ÀÌ¸§Àº 80ÀÚ ÀÌ³»·Î ÇØ ÁÖ¼¼¿ä.");
+  .min(1, "ì´ë¦„ì„ ì…ë ¥í•˜ì„¸ìš”.")
+  .max(80, "ì´ë¦„ì€ 80ì ì´ë‚´ë¡œ í•´ ì£¼ì„¸ìš”.");
 
 const profileUpdateSchema = z.object({
   username: usernameSchema,
@@ -46,7 +46,7 @@ export async function updateProfile(raw: {
   const parsed = profileUpdateSchema.safeParse(raw);
   if (!parsed.success) {
     const msg = parsed.error.issues.map((i) => i.message).join(", ");
-    return { ok: false, message: msg || "ÀÔ·Â°ªÀ» È®ÀÎÇÏ¼¼¿ä." };
+    return { ok: false, message: msg || "ì…ë ¥ê°’ì„ í™•ì¸í•˜ì„¸ìš”." };
   }
 
   try {
@@ -56,7 +56,7 @@ export async function updateProfile(raw: {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return { ok: false, message: "·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù." };
+      return { ok: false, message: "ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤." };
     }
 
     const role1 = sanitizeRole(parsed.data.rolePriority1);
@@ -82,7 +82,7 @@ export async function updateProfile(raw: {
     revalidatePath("/", "layout");
     return { ok: true };
   } catch (e) {
-    const message = e instanceof Error ? e.message : "¾Ë ¼ö ¾ø´Â ¿À·ùÀÔ´Ï´Ù.";
+    const message = e instanceof Error ? e.message : "ì•Œ ìˆ˜ ì—†ëŠ” ì˜¤ë¥˜ì…ë‹ˆë‹¤.";
     return { ok: false, message };
   }
 }
@@ -95,21 +95,21 @@ export async function updateAvatar(formData: FormData): Promise<ProfileActionRes
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return { ok: false, message: "·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù." };
+      return { ok: false, message: "ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤." };
     }
 
     const file = formData.get("file");
     if (!(file instanceof File) || file.size === 0) {
-      return { ok: false, message: "ÀÌ¹ÌÁö ÆÄÀÏÀ» ¼±ÅÃÇØ ÁÖ¼¼¿ä." };
+      return { ok: false, message: "ì´ë¯¸ì§€ íŒŒì¼ì„ ì„ íƒí•´ ì£¼ì„¸ìš”." };
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      return { ok: false, message: "ÆÄÀÏ Å©±â´Â 5MB ÀÌÇÏ¿©¾ß ÇÕ´Ï´Ù." };
+      return { ok: false, message: "íŒŒì¼ í¬ê¸°ëŠ” 5MB ì´í•˜ì—¬ì•¼ í•©ë‹ˆë‹¤." };
     }
 
     const mime = file.type || "application/octet-stream";
     if (!ALLOWED_AVATAR.has(mime)) {
-      return { ok: false, message: "PNG, JPG, WebP, GIF¸¸ ¾÷·ÎµåÇÒ ¼ö ÀÖ½À´Ï´Ù." };
+      return { ok: false, message: "PNG, JPG, WebP, GIFë§Œ ì—…ë¡œë“œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤." };
     }
 
     const objectPath = `${user.id}/avatar.${extFromMime(mime)}`;
@@ -149,7 +149,8 @@ export async function updateAvatar(formData: FormData): Promise<ProfileActionRes
     revalidatePath("/", "layout");
     return { ok: true };
   } catch (e) {
-    const message = e instanceof Error ? e.message : "¾Ë ¼ö ¾ø´Â ¿À·ùÀÔ´Ï´Ù.";
+    const message = e instanceof Error ? e.message : "ì•Œ ìˆ˜ ì—†ëŠ” ì˜¤ë¥˜ì…ë‹ˆë‹¤.";
     return { ok: false, message };
   }
 }
+

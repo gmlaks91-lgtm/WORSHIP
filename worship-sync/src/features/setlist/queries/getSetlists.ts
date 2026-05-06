@@ -1,4 +1,4 @@
-import "server-only";
+ï»¿import "server-only";
 
 import type { TeamRoleCode } from "@/types/database";
 import { createClient } from "@/utils/supabase/server";
@@ -112,7 +112,7 @@ export async function getSetlists(options?: { limit?: number }): Promise<GetSetl
         .map((line) => ({
           role_code: line.role_code,
           member_id: line.member_id,
-          member_name: line.profiles?.username ?? "¾Ë ¼ö ¾øÀ½",
+          member_name: line.profiles?.username ?? "ì•Œ ìˆ˜ ì—†ìŒ",
         }))
         .sort((a, b) => a.role_code.localeCompare(b.role_code));
 
@@ -128,7 +128,8 @@ export async function getSetlists(options?: { limit?: number }): Promise<GetSetl
 
     return { setlists, error: null };
   } catch (e) {
-    const message = e instanceof Error ? e.message : "¾Ë ¼ö ¾ø´Â ¿À·ù";
+    const message = e instanceof Error ? e.message : "ì•Œ ìˆ˜ ì—†ëŠ” ì˜¤ë¥˜";
     return { setlists: [], error: message };
   }
 }
+

@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+ï»¿import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { Providers } from "@/components/providers";
@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Ahaba",
-  description: "Ahaba Âù¾çÆÀÀÇ ÄÜÆ¼, ¾Çº¸, ÀÏÁ¤, ÆÀ ¶óÀÎ¾÷À» ÇÑ°÷¿¡¼­ °ü¸®ÇÕ´Ï´Ù.",
+  description: "Ahaba ì°¬ì–‘íŒ€ì˜ ì½˜í‹°, ì•…ë³´, ì¼ì •, íŒ€ ë¼ì¸ì—…ì„ í•œê³³ì—ì„œ ê´€ë¦¬í•©ë‹ˆë‹¤.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -59,3 +59,4 @@ export default function RootLayout({
     </html>
   );
 }
+

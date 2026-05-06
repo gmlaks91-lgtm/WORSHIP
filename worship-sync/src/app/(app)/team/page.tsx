@@ -1,4 +1,4 @@
-import { getTeamMembers } from "@/features/team/queries/getTeamMembers";
+锘縤mport { getTeamMembers } from "@/features/team/queries/getTeamMembers";
 import { teamRoleLabel } from "@/lib/team-roles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -22,10 +22,10 @@ export default async function TeamPage() {
           <Card key={member.id} className="border-border/70">
             <CardHeader className="pb-3"><CardTitle className="text-base">{member.username}</CardTitle></CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <p><span className="text-muted-foreground">Permission</span> · {member.role === "leader" ? "Leader" : "Member"}</p>
-              <p><span className="text-muted-foreground">Priority 1</span> · {teamRoleLabel(member.role_priority_1)}</p>
-              <p><span className="text-muted-foreground">Priority 2</span> · {teamRoleLabel(member.role_priority_2)}</p>
-              <p><span className="text-muted-foreground">Priority 3</span> · {teamRoleLabel(member.role_priority_3)}</p>
+              <p><span className="text-muted-foreground">Permission</span> 路 {member.role === "leader" ? "Leader" : "Member"}</p>
+              <p><span className="text-muted-foreground">Priority 1</span> 路 {teamRoleLabel(member.role_priority_1)}</p>
+              <p><span className="text-muted-foreground">Priority 2</span> 路 {teamRoleLabel(member.role_priority_2)}</p>
+              <p><span className="text-muted-foreground">Priority 3</span> 路 {teamRoleLabel(member.role_priority_3)}</p>
             </CardContent>
           </Card>
         ))}
@@ -33,3 +33,4 @@ export default async function TeamPage() {
     </div>
   );
 }
+

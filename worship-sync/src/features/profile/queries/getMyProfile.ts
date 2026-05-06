@@ -1,4 +1,4 @@
-import "server-only";
+ï»¿import "server-only";
 
 import type { ProfileRole, TeamRoleCode } from "@/types/database";
 import { createClient } from "@/utils/supabase/server";
@@ -38,7 +38,7 @@ export async function getMyProfile(): Promise<{
       return { profile: null, error: error.message };
     }
     if (!data) {
-      return { profile: null, error: "ÇÁ·ÎÇÊÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù." };
+      return { profile: null, error: "í”„ë¡œí•„ì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤." };
     }
 
     return {
@@ -55,7 +55,8 @@ export async function getMyProfile(): Promise<{
       error: null,
     };
   } catch (e) {
-    const message = e instanceof Error ? e.message : "¾Ë ¼ö ¾ø´Â ¿À·ù";
+    const message = e instanceof Error ? e.message : "ì•Œ ìˆ˜ ì—†ëŠ” ì˜¤ë¥˜";
     return { profile: null, error: message };
   }
 }
+

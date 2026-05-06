@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -172,7 +172,7 @@ export function PrepSetlistSection({
                       {list.lineup.map((item) => (
                         <li key={`${list.id}-${item.role_code}`} className="rounded-lg border border-border/60 bg-card px-3 py-2 text-sm">
                           <span className="text-muted-foreground">{teamRoleLabel(item.role_code)}</span>
-                          <span className="mx-1">¡¤</span>
+                          <span className="mx-1">Â·</span>
                           <span className="font-medium">{item.member_name}</span>
                         </li>
                       ))}
@@ -197,3 +197,4 @@ export function PrepSetlistSection({
     </>
   );
 }
+

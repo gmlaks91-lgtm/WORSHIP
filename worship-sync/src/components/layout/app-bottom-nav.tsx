@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,7 +25,7 @@ export function AppBottomNav({ className }: AppBottomNavProps) {
         "shadow-[0_-4px_24px_-8px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_24px_-8px_rgba(0,0,0,0.45)]",
         className,
       )}
-      aria-label="ÁÖ¿ä ¸Þ´º"
+      aria-label="ì£¼ìš” ë©”ë‰´"
     >
       <div
         className="mx-auto grid max-w-3xl px-1 pt-2 pb-1 sm:px-2"
@@ -60,3 +60,4 @@ export function AppBottomNav({ className }: AppBottomNavProps) {
     </nav>
   );
 }
+

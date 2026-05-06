@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { signOut } from "@/features/auth/actions";
 import { AddSetlistTriggerButton } from "@/features/setlist/components/AddSetlistDialog";
@@ -22,9 +22,10 @@ export function AppHeaderActions({ canManageSetlists, teamMembers }: AppHeaderAc
       ) : null}
       <form action={signOut}>
         <Button type="submit" variant="ghost" size="sm" className="text-muted-foreground">
-          �α׾ƿ�
+          로그아웃
         </Button>
       </form>
     </div>
   );
 }
+
