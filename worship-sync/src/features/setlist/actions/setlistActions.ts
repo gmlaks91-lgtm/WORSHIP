@@ -1,4 +1,4 @@
-"use server";
+ï»¿"use server";
 
 import { revalidatePath } from "next/cache";
 
@@ -40,7 +40,9 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
 
     const setlistId = setlist.id;
 
-    const { data: existingSongs, error: songsReadError } = await supabase.from("songs").select("id, youtube_url");
+    const { data: existingSongs, error: songsReadError } = await supabase
+      .from("songs")
+      .select("id, youtube_url");
     if (songsReadError) {
       await supabase.from("setlists").delete().eq("id", setlistId);
       return { ok: false, message: songsReadError.message };
@@ -64,7 +66,7 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
       if (!songId) {
         const canonical = toYoutubeWatchUrl(videoId);
         const oembedTitle = await fetchYoutubeOEmbedTitle(canonical);
-        const songTitle = oembedTitle ?? `YouTube ¡¤ ${videoId}`;
+        const songTitle = oembedTitle ?? `YouTube - ${videoId}`;
 
         const { data: inserted, error: insertSongError } = await supabase
           .from("songs")
@@ -84,7 +86,11 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
       songIdsOrdered.push(songId);
     }
 
-    const songRows = songIdsOrdered.map((songId, index) => ({ setlist_id: setlistId, song_id: songId, order_index: index }));
+    const songRows = songIdsOrdered.map((songId, index) => ({
+      setlist_id: setlistId,
+      song_id: songId,
+      order_index: index,
+    }));
     const { error: junctionError } = await supabase.from("setlist_songs").insert(songRows);
     if (junctionError) {
       await supabase.from("setlists").delete().eq("id", setlistId);
@@ -93,7 +99,11 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
 
     const lineupRows = lineup
       .filter((item) => item.memberId)
-      .map((item) => ({ setlist_id: setlistId, role_code: item.roleCode as TeamRoleCode, member_id: item.memberId! }));
+      .map((item) => ({
+        setlist_id: setlistId,
+        role_code: item.roleCode as TeamRoleCode,
+        member_id: item.memberId!,
+      }));
 
     if (lineupRows.length > 0) {
       const { error: lineupErr } = await supabase.from("setlist_lineups").insert(lineupRows);
@@ -120,7 +130,10 @@ export async function upsertSetlistLineup(raw: {
     const leader = await requireLeader(supabase);
     if (!leader.ok) return { ok: false, message: leader.message };
 
-    const { error: delErr } = await supabase.from("setlist_lineups").delete().eq("setlist_id", raw.setlistId);
+    const { error: delErr } = await supabase
+      .from("setlist_lineups")
+      .delete()
+      .eq("setlist_id", raw.setlistId);
     if (delErr) return { ok: false, message: delErr.message };
 
     const rows = raw.lineup
