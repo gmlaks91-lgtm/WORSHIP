@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { ProfileRole } from "@/types/database";
+import type { ProfileRole, TeamRoleCode } from "@/types/database";
 import { createClient } from "@/utils/supabase/server";
 
 export type MyProfileRow = {
@@ -8,6 +8,9 @@ export type MyProfileRow = {
   username: string;
   role: ProfileRole;
   avatar_url: string | null;
+  role_priority_1: TeamRoleCode | null;
+  role_priority_2: TeamRoleCode | null;
+  role_priority_3: TeamRoleCode | null;
   updated_at: string;
 };
 
@@ -27,7 +30,7 @@ export async function getMyProfile(): Promise<{
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, username, role, avatar_url, updated_at")
+      .select("id, username, role, avatar_url, role_priority_1, role_priority_2, role_priority_3, updated_at")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -35,7 +38,7 @@ export async function getMyProfile(): Promise<{
       return { profile: null, error: error.message };
     }
     if (!data) {
-      return { profile: null, error: "í”„ë¡œí•„ì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤." };
+      return { profile: null, error: "ÇÁ·ÎÇÊÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù." };
     }
 
     return {
@@ -44,12 +47,15 @@ export async function getMyProfile(): Promise<{
         username: data.username,
         role: data.role as ProfileRole,
         avatar_url: data.avatar_url ?? null,
+        role_priority_1: (data.role_priority_1 as TeamRoleCode | null) ?? null,
+        role_priority_2: (data.role_priority_2 as TeamRoleCode | null) ?? null,
+        role_priority_3: (data.role_priority_3 as TeamRoleCode | null) ?? null,
         updated_at: data.updated_at,
       },
       error: null,
     };
   } catch (e) {
-    const message = e instanceof Error ? e.message : "ì•Œ ìˆ˜ ì—†ëŠ” ì˜¤ë¥˜";
+    const message = e instanceof Error ? e.message : "¾Ë ¼ö ¾ø´Â ¿À·ù";
     return { profile: null, error: message };
   }
 }

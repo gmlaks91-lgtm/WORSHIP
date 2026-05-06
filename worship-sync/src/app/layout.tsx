@@ -16,13 +16,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WorshipSync",
-  description:
-    "ì°¬ì–‘íŒ€ì˜ ì˜ì  ë‚˜ëˆ”, ê³¡ ìˆ™ì§€, ì•…ë³´ ê´€ë¦¬, ì¼ì • ì¡°ìœ¨ì„ í•œ ê³³ì—ì„œ â€” ìŠ¤ë§ˆíŠ¸ ì†¡ë¦¬ìŠ¤íŠ¸ì™€ ì˜ˆìŠµ ëª¨ë“œ.",
+  title: "Ahaba",
+  description: "Ahaba Âù¾çÆÀÀÇ ÄÜÆ¼, ¾Çº¸, ÀÏÁ¤, ÆÀ ¶óÀÎ¾÷À» ÇÑ°÷¿¡¼­ °ü¸®ÇÕ´Ï´Ù.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    title: "WorshipSync",
+    title: "Ahaba",
     statusBarStyle: "default",
   },
   formatDetection: {

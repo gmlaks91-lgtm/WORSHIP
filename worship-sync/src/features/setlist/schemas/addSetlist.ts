@@ -1,26 +1,48 @@
 import { z } from "zod";
 
+import { TEAM_ROLE_OPTIONS } from "@/lib/team-roles";
 import { getYoutubeVideoId } from "@/features/setlist/utils/youtube";
+
+const teamRoleCodeValues = TEAM_ROLE_OPTIONS.map((r) => r.code) as [
+  "L",
+  "M",
+  "S",
+  "D",
+  "A/G",
+  "B/G",
+  "E/G",
+  "V",
+  "STAFF",
+];
+
+const roleCodeSchema = z.enum(teamRoleCodeValues);
 
 export const addSetlistTrackSchema = z.object({
   youtubeUrl: z
     .string()
-    .min(1, "YouTube URLì„ ì…ë ¥í•˜ì„¸ìš”")
-    .refine((u) => !!getYoutubeVideoId(u), "ìœ íš¨í•œ YouTube URLì´ ì•„ë‹™ë‹ˆë‹¤"),
+    .min(1, "YouTube URLÀ» ÀÔ·ÂÇÏ¼¼¿ä")
+    .refine((u) => !!getYoutubeVideoId(u), "À¯È¿ÇÑ YouTube URLÀÌ ¾Æ´Õ´Ï´Ù"),
+});
+
+export const lineupAssignSchema = z.object({
+  roleCode: roleCodeSchema,
+  memberId: z.string().uuid().nullable(),
 });
 
 export const addSetlistFormSchema = z.object({
-  title: z.string().min(1, "ì½˜í‹° ì œëª©ì„ ì…ë ¥í•˜ì„¸ìš”"),
+  title: z.string().min(1, "ÄÜÆ¼ Á¦¸ñÀ» ÀÔ·ÂÇÏ¼¼¿ä"),
   eventDate: z.date(),
-  tracks: z.array(addSetlistTrackSchema).min(1, "ìµœì†Œ í•œ ê³¡ ì´ìƒ ì¶”ê°€í•˜ì„¸ìš”"),
+  tracks: z.array(addSetlistTrackSchema).min(1, "ÃÖ¼Ò ÇÑ °î ÀÌ»ó Ãß°¡ÇÏ¼¼¿ä"),
+  lineup: z.array(lineupAssignSchema),
 });
 
 export type AddSetlistFormValues = z.infer<typeof addSetlistFormSchema>;
 
 export const createPrepSetlistPayloadSchema = z.object({
   title: z.string().min(1),
-  eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "ë‚ ì§œ í˜•ì‹ì´ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤"),
+  eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "³¯Â¥ Çü½ÄÀÌ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù"),
   tracks: z.array(addSetlistTrackSchema).min(1),
+  lineup: z.array(lineupAssignSchema),
 });
 
 export type CreatePrepSetlistPayload = z.infer<typeof createPrepSetlistPayloadSchema>;

@@ -13,36 +13,27 @@ export default async function MorePage() {
   return (
     <div className="flex flex-col gap-10">
       <header className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">계정</p>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">마이페이지</h1>
-        <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
-          표시 이름과 프로필 사진을 관리합니다. 역할(리더/팀원)은 관리자에게 문의하세요.
-        </p>
+        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Ahaba</p>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">My page</h1>
+        <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">Manage your profile and jump to team lineup page.</p>
       </header>
 
-      {error ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3.5 text-sm text-destructive">
-          프로필을 불러오지 못했습니다: {error}
-        </div>
-      ) : null}
+      {error ? <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3.5 text-sm text-destructive">Failed to load profile: {error}</div> : null}
 
       {!profile && !error ? (
         <div className="rounded-lg border border-border/60 bg-muted/25 px-6 py-10 text-center text-sm text-muted-foreground">
-          로그인이 필요합니다.
+          Login required.
           <div className="mt-4">
-            <Link href="/login" className={cn(buttonVariants({ size: "sm" }))}>
-              로그인하기
-            </Link>
+            <Link href="/login" className={cn(buttonVariants({ size: "sm" }))}>Go to login</Link>
           </div>
         </div>
       ) : null}
 
       {profile ? <ProfileSettings key={profile.updated_at} profile={profile} /> : null}
 
-      <footer className="border-t border-border/50 pt-6">
-        <Link href="/" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-          홈으로
-        </Link>
+      <footer className="flex flex-wrap items-center gap-3 border-t border-border/50 pt-6">
+        <Link href="/team" className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}>Team lineup</Link>
+        <Link href="/" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>Home</Link>
       </footer>
     </div>
   );

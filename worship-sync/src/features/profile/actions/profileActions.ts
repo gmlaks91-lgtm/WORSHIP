@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { TEAM_ROLE_CODE_SET } from "@/lib/team-roles";
+import type { TeamRoleCode } from "@/types/database";
 import { createClient } from "@/utils/supabase/server";
 
 export type ProfileActionResult = { ok: true } | { ok: false; message: string };
@@ -10,15 +12,22 @@ export type ProfileActionResult = { ok: true } | { ok: false; message: string };
 const usernameSchema = z
   .string()
   .trim()
-  .min(1, "ì´ë¦„ì„ ì…ë ¥í•˜ì„¸ìš”.")
-  .max(80, "ì´ë¦„ì€ 80ì ì´ë‚´ë¡œ í•´ ì£¼ì„¸ìš”.");
+  .min(1, "ÀÌ¸§À» ÀÔ·ÂÇÏ¼¼¿ä.")
+  .max(80, "ÀÌ¸§Àº 80ÀÚ ÀÌ³»·Î ÇØ ÁÖ¼¼¿ä.");
 
-const ALLOWED_AVATAR = new Set([
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "image/gif",
-]);
+const profileUpdateSchema = z.object({
+  username: usernameSchema,
+  rolePriority1: z.string().nullable().optional(),
+  rolePriority2: z.string().nullable().optional(),
+  rolePriority3: z.string().nullable().optional(),
+});
+
+const ALLOWED_AVATAR = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
+
+function sanitizeRole(value: string | null | undefined): TeamRoleCode | null {
+  if (!value) return null;
+  return TEAM_ROLE_CODE_SET.has(value as TeamRoleCode) ? (value as TeamRoleCode) : null;
+}
 
 function extFromMime(mime: string): string {
   if (mime === "image/png") return "png";
@@ -28,11 +37,16 @@ function extFromMime(mime: string): string {
   return "bin";
 }
 
-export async function updateProfile(username: string): Promise<ProfileActionResult> {
-  const parsed = usernameSchema.safeParse(username);
+export async function updateProfile(raw: {
+  username: string;
+  rolePriority1?: string | null;
+  rolePriority2?: string | null;
+  rolePriority3?: string | null;
+}): Promise<ProfileActionResult> {
+  const parsed = profileUpdateSchema.safeParse(raw);
   if (!parsed.success) {
     const msg = parsed.error.issues.map((i) => i.message).join(", ");
-    return { ok: false, message: msg || "ì…ë ¥ê°’ì„ í™•ì¸í•˜ì„¸ìš”." };
+    return { ok: false, message: msg || "ÀÔ·Â°ªÀ» È®ÀÎÇÏ¼¼¿ä." };
   }
 
   try {
@@ -42,12 +56,21 @@ export async function updateProfile(username: string): Promise<ProfileActionResu
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return { ok: false, message: "ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤." };
+      return { ok: false, message: "·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù." };
     }
+
+    const role1 = sanitizeRole(parsed.data.rolePriority1);
+    const role2 = sanitizeRole(parsed.data.rolePriority2);
+    const role3 = sanitizeRole(parsed.data.rolePriority3);
 
     const { error } = await supabase
       .from("profiles")
-      .update({ username: parsed.data })
+      .update({
+        username: parsed.data.username,
+        role_priority_1: role1,
+        role_priority_2: role2,
+        role_priority_3: role3,
+      })
       .eq("id", user.id);
 
     if (error) {
@@ -55,10 +78,11 @@ export async function updateProfile(username: string): Promise<ProfileActionResu
     }
 
     revalidatePath("/more");
+    revalidatePath("/team");
     revalidatePath("/", "layout");
     return { ok: true };
   } catch (e) {
-    const message = e instanceof Error ? e.message : "ì•Œ ìˆ˜ ì—†ëŠ” ì˜¤ë¥˜ì…ë‹ˆë‹¤.";
+    const message = e instanceof Error ? e.message : "¾Ë ¼ö ¾ø´Â ¿À·ùÀÔ´Ï´Ù.";
     return { ok: false, message };
   }
 }
@@ -71,21 +95,21 @@ export async function updateAvatar(formData: FormData): Promise<ProfileActionRes
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return { ok: false, message: "ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤." };
+      return { ok: false, message: "·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù." };
     }
 
     const file = formData.get("file");
     if (!(file instanceof File) || file.size === 0) {
-      return { ok: false, message: "ì´ë¯¸ì§€ íŒŒì¼ì„ ì„ íƒí•´ ì£¼ì„¸ìš”." };
+      return { ok: false, message: "ÀÌ¹ÌÁö ÆÄÀÏÀ» ¼±ÅÃÇØ ÁÖ¼¼¿ä." };
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      return { ok: false, message: "íŒŒì¼ í¬ê¸°ëŠ” 5MB ì´í•˜ì—¬ì•¼ í•©ë‹ˆë‹¤." };
+      return { ok: false, message: "ÆÄÀÏ Å©±â´Â 5MB ÀÌÇÏ¿©¾ß ÇÕ´Ï´Ù." };
     }
 
     const mime = file.type || "application/octet-stream";
     if (!ALLOWED_AVATAR.has(mime)) {
-      return { ok: false, message: "PNG, JPG, WebP, GIFë§Œ ì—…ë¡œë“œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤." };
+      return { ok: false, message: "PNG, JPG, WebP, GIF¸¸ ¾÷·ÎµåÇÒ ¼ö ÀÖ½À´Ï´Ù." };
     }
 
     const objectPath = `${user.id}/avatar.${extFromMime(mime)}`;
@@ -115,17 +139,17 @@ export async function updateAvatar(formData: FormData): Promise<ProfileActionRes
     }
 
     const { data: siblings } = await supabase.storage.from("avatars").list(user.id);
-    const toRemove =
-      siblings?.map((o) => `${user.id}/${o.name}`).filter((p) => p !== objectPath) ?? [];
+    const toRemove = siblings?.map((o) => `${user.id}/${o.name}`).filter((p) => p !== objectPath) ?? [];
     if (toRemove.length) {
       await supabase.storage.from("avatars").remove(toRemove);
     }
 
     revalidatePath("/more");
+    revalidatePath("/team");
     revalidatePath("/", "layout");
     return { ok: true };
   } catch (e) {
-    const message = e instanceof Error ? e.message : "ì•Œ ìˆ˜ ì—†ëŠ” ì˜¤ë¥˜ì…ë‹ˆë‹¤.";
+    const message = e instanceof Error ? e.message : "¾Ë ¼ö ¾ø´Â ¿À·ùÀÔ´Ï´Ù.";
     return { ok: false, message };
   }
 }

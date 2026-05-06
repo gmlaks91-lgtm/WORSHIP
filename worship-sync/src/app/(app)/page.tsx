@@ -3,6 +3,7 @@ import { getPersonalDashboardData } from "@/features/dashboard/queries/getPerson
 import { PrepSetlistSection } from "@/features/setlist/components/PrepSetlistSection";
 import { getSetlists } from "@/features/setlist/queries/getSetlists";
 import type { PrepSetlistWithSheets } from "@/features/setlist/types";
+import type { TeamMemberRow } from "@/features/team/queries/getTeamMembers";
 import { getLatestSheetsBySongIds } from "@/features/sheets/queries/getSheets";
 import { createClient } from "@/utils/supabase/server";
 
@@ -14,13 +15,18 @@ export default async function SmartSetlistDashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
   let canManageSetlists = false;
+  let teamMembers: TeamMemberRow[] = [];
+
   if (user) {
-    const { data: row } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle();
+    const [{ data: row }, { data: members }] = await Promise.all([
+      supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("id, username, avatar_url, role, role_priority_1, role_priority_2, role_priority_3")
+        .order("username", { ascending: true }),
+    ]);
     canManageSetlists = row?.role === "leader";
+    teamMembers = (members ?? []) as TeamMemberRow[];
   }
 
   const [dashboardData, { setlists, error }] = await Promise.all([
@@ -41,14 +47,10 @@ export default async function SmartSetlistDashboardPage() {
   return (
     <div className="flex flex-1 flex-col gap-10">
       <section className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          이번 주 콘티
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-          스마트 송리스트
-        </h1>
+        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Ahaba</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">Smart Setlist</h1>
         <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
-          예습(prep) 콘티와 수록곡을 불러옵니다. 콘티 추가·편집은 리더만 할 수 있습니다.
+          Prep setlists, lineup assignments, and sheets in one place.
         </p>
       </section>
 
@@ -58,6 +60,7 @@ export default async function SmartSetlistDashboardPage() {
         setlists={setlistsWithSheets}
         error={error}
         canManageSetlists={canManageSetlists}
+        teamMembers={teamMembers}
       />
     </div>
   );

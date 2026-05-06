@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, CalendarDays, LayoutList, MessagesSquare, MoreHorizontal } from "lucide-react";
+import { BookOpen, CalendarDays, LayoutList, MessagesSquare, MoreHorizontal, Users } from "lucide-react";
 
 export type AppNavItem = {
   href: string;
@@ -8,9 +8,10 @@ export type AppNavItem = {
 };
 
 export const APP_NAV_ITEMS: AppNavItem[] = [
-  { href: "/", label: "ÏÜ°Î¶¨Ïä§Ìä∏", icon: LayoutList },
-  { href: "/sheets", label: "ÏïÖÎ≥¥", icon: BookOpen },
-  { href: "/schedule", label: "ÏùºÏ†ï", icon: CalendarDays },
-  { href: "/board", label: "Í≤åÏãúÌåê", icon: MessagesSquare },
-  { href: "/more", label: "ÎçîÎ≥¥Í∏∞", icon: MoreHorizontal },
+  { href: "/", label: "º€∏ÆΩ∫∆Æ", icon: LayoutList },
+  { href: "/sheets", label: "æ«∫∏", icon: BookOpen },
+  { href: "/schedule", label: "¿œ¡§", icon: CalendarDays },
+  { href: "/team", label: "∆¿", icon: Users },
+  { href: "/board", label: "∞‘Ω√∆«", icon: MessagesSquare },
+  { href: "/more", label: "¥ı∫∏±‚", icon: MoreHorizontal },
 ];

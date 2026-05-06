@@ -14,13 +14,15 @@ export async function AppHeader({ className }: AppHeaderProps) {
     data: { user },
   } = await supabase.auth.getUser();
   let canManageSetlists = false;
+  let teamMembers: { id: string; username: string }[] = [];
+
   if (user) {
-    const { data: row } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle();
+    const [{ data: row }, { data: members }] = await Promise.all([
+      supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
+      supabase.from("profiles").select("id, username").order("username", { ascending: true }),
+    ]);
     canManageSetlists = row?.role === "leader";
+    teamMembers = (members ?? []) as { id: string; username: string }[];
   }
 
   return (
@@ -32,22 +34,15 @@ export async function AppHeader({ className }: AppHeaderProps) {
       )}
     >
       <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-3 px-5 sm:h-16 sm:px-7">
-        <Link
-          href="/"
-          className="group flex flex-col gap-0.5 transition-opacity hover:opacity-90"
-        >
+        <Link href="/" className="group flex flex-col gap-0.5 transition-opacity hover:opacity-90">
           <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            Worship
+            Team
           </span>
-          <span className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
-            WorshipSync
-          </span>
+          <span className="text-base font-semibold tracking-tight text-foreground sm:text-lg">Ahaba</span>
         </Link>
         <div className="flex items-center gap-2">
-          <span className="hidden text-xs text-muted-foreground lg:inline">
-            스마트 송리스트
-          </span>
-          <AppHeaderActions canManageSetlists={canManageSetlists} />
+          <span className="hidden text-xs text-muted-foreground lg:inline">Ahaba Team</span>
+          <AppHeaderActions canManageSetlists={canManageSetlists} teamMembers={teamMembers} />
         </div>
       </div>
     </header>

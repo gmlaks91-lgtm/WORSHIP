@@ -3,9 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useFieldArray, useForm, useWatch, type Control } from "react-hook-form";
+import { useMemo, useState } from "react";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { CalendarIcon, Loader2, Plus, Trash2 } from "lucide-react";
 
 import { createPrepSetlist } from "@/features/setlist/actions/setlistActions";
@@ -13,11 +12,7 @@ import {
   addSetlistFormSchema,
   type AddSetlistFormValues,
 } from "@/features/setlist/schemas/addSetlist";
-import {
-  getYoutubeThumbnailUrl,
-  getYoutubeVideoId,
-  toYoutubeWatchUrl,
-} from "@/features/setlist/utils/youtube";
+import { TEAM_ROLE_OPTIONS, teamRoleLabel } from "@/lib/team-roles";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -40,90 +35,29 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { toastPromise } from "@/lib/app-toast";
 import { cn } from "@/lib/utils";
 
-function useDebouncedOembedTitle(url: string, debounceMs: number) {
-  const videoId = useMemo(() => getYoutubeVideoId(url), [url]);
-  const [title, setTitle] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!videoId) {
-      return;
-    }
-    const watchUrl = toYoutubeWatchUrl(videoId);
-    const t = window.setTimeout(async () => {
-      setLoading(true);
-      try {
-        const endpoint = `https://www.youtube.com/oembed?url=${encodeURIComponent(watchUrl)}&format=json`;
-        const res = await fetch(endpoint);
-        if (!res.ok) {
-          setTitle(null);
-          return;
-        }
-        const data = (await res.json()) as { title?: string };
-        setTitle(data.title?.trim() ?? null);
-      } catch {
-        setTitle(null);
-      } finally {
-        setLoading(false);
-      }
-    }, debounceMs);
-    return () => window.clearTimeout(t);
-  }, [videoId, debounceMs, url]);
-
-  return { videoId, title: videoId ? title : null, loading: videoId ? loading : false };
-}
-
-function TrackRowPreviewField({
-  control,
-  index,
-}: {
-  control: Control<AddSetlistFormValues>;
-  index: number;
-}) {
-  const url = useWatch({ control, name: `tracks.${index}.youtubeUrl`, defaultValue: "" }) ?? "";
-  return <TrackRowPreview key={url ? `${index}-${url}` : `empty-${index}`} url={url} />;
-}
-
-function TrackRowPreview({ url }: { url: string }) {
-  const { videoId, title, loading } = useDebouncedOembedTitle(url, 450);
-  const thumb = videoId ? getYoutubeThumbnailUrl(videoId) : null;
-
-  if (!videoId) {
-    return (
-      <p className="text-[11px] text-muted-foreground">ìœ íš¨í•œ ë§í¬ë¥¼ ì…ë ¥í•˜ë©´ ë¯¸ë¦¬ë³´ê¸°ê°€ í‘œì‹œë©ë‹ˆë‹¤.</p>
-    );
-  }
-
-  return (
-    <div className="flex gap-4 rounded-lg border border-border/60 bg-muted/25 p-3 shadow-sm">
-      <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-md bg-muted ring-1 ring-border/60">
-        {thumb ? (
-          <Image src={thumb} alt="" fill className="object-cover" sizes="96px" />
-        ) : null}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground">ë¯¸ë¦¬ë³´ê¸°</p>
-        <p className="truncate text-sm leading-snug text-foreground">
-          {loading ? "ì œëª© ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘â€¦" : title ?? "ì œëª©ì„ ê°€ì ¸ì˜¬ ìˆ˜ ì—†ìŠµë‹ˆë‹¤"}
-        </p>
-        <p className="truncate text-[10px] text-muted-foreground">{videoId}</p>
-      </div>
-    </div>
-  );
-}
+export type LineupMemberOption = {
+  id: string;
+  username: string;
+};
 
 type AddSetlistDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  teamMembers: LineupMemberOption[];
 };
 
-export function AddSetlistDialog({ open, onOpenChange }: AddSetlistDialogProps) {
+function makeDefaultLineup() {
+  return TEAM_ROLE_OPTIONS.map((role) => ({ roleCode: role.code, memberId: null }));
+}
+
+export function AddSetlistDialog({ open, onOpenChange, teamMembers }: AddSetlistDialogProps) {
   const form = useForm<AddSetlistFormValues>({
     resolver: zodResolver(addSetlistFormSchema),
     defaultValues: {
       title: "",
       eventDate: new Date(),
       tracks: [{ youtubeUrl: "" }],
+      lineup: makeDefaultLineup(),
     },
   });
 
@@ -134,18 +68,14 @@ export function AddSetlistDialog({ open, onOpenChange }: AddSetlistDialogProps) 
 
   const eventDateValue = useWatch({ control: form.control, name: "eventDate" });
 
-  const resetForm = useCallback(() => {
+  const resetForm = () => {
     form.reset({
       title: "",
       eventDate: new Date(),
       tracks: [{ youtubeUrl: "" }],
+      lineup: makeDefaultLineup(),
     });
-  }, [form]);
-
-  useEffect(() => {
-    if (!open) return;
-    resetForm();
-  }, [open, resetForm]);
+  };
 
   const onSubmit = form.handleSubmit(async (values) => {
     const payload = {
@@ -154,6 +84,7 @@ export function AddSetlistDialog({ open, onOpenChange }: AddSetlistDialogProps) 
       tracks: values.tracks.map((t) => ({
         youtubeUrl: t.youtubeUrl.trim(),
       })),
+      lineup: values.lineup.map((l) => ({ roleCode: l.roleCode, memberId: l.memberId || null })),
     };
 
     try {
@@ -161,7 +92,7 @@ export function AddSetlistDialog({ open, onOpenChange }: AddSetlistDialogProps) 
         createPrepSetlist(payload).then((result) => {
           if (!result.ok) throw new Error(result.message);
         }),
-        "ì½˜í‹°ë¥¼ ì €ì¥í•˜ëŠ” ì¤‘ì´ì—ìš”â€¦",
+        "ÄÜÆ¼¸¦ ÀúÀåÇÏ´Â ÁßÀÌ¿¡¿ä¡¦",
       ).unwrap();
       onOpenChange(false);
       resetForm();
@@ -170,18 +101,24 @@ export function AddSetlistDialog({ open, onOpenChange }: AddSetlistDialogProps) 
     }
   });
 
+  const memberOptions = useMemo(() => teamMembers, [teamMembers]);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        onOpenChange(next);
+        if (!next) resetForm();
+      }}
+    >
       <DialogContent
         showCloseButton
-        className="max-h-[min(90vh,720px)] w-[calc(100%-1.5rem)] max-w-lg gap-0 overflow-y-auto p-0 sm:max-w-lg"
+        className="max-h-[min(90vh,760px)] w-[calc(100%-1.5rem)] max-w-lg gap-0 overflow-y-auto p-0 sm:max-w-lg"
       >
         <div className="border-b border-border/60 px-4 py-4 sm:px-5">
           <DialogHeader className="gap-1">
-            <DialogTitle className="text-lg">ì˜ˆìŠµ ì½˜í‹° ì¶”ê°€</DialogTitle>
-            <DialogDescription>
-              ë‚ ì§œÂ·ì œëª©Â·YouTube ë§í¬ë¥¼ ì…ë ¥í•˜ë©´ ì˜ˆìŠµ(prep) ìƒíƒœë¡œ ì €ì¥ë©ë‹ˆë‹¤.
-            </DialogDescription>
+            <DialogTitle className="text-lg">¿¹½À ÄÜÆ¼ Ãß°¡</DialogTitle>
+            <DialogDescription>°î°ú ¶óÀÎ¾÷À» ÇÔ²² ÀúÀåÇÕ´Ï´Ù.</DialogDescription>
           </DialogHeader>
         </div>
 
@@ -189,10 +126,10 @@ export function AddSetlistDialog({ open, onOpenChange }: AddSetlistDialogProps) 
           <FieldSet className="gap-5">
             <FieldGroup className="gap-5">
               <Field>
-                <FieldLabel htmlFor="setlist-title">ì½˜í‹° ì œëª©</FieldLabel>
+                <FieldLabel htmlFor="setlist-title">ÄÜÆ¼ Á¦¸ñ</FieldLabel>
                 <Input
                   id="setlist-title"
-                  placeholder="ì˜ˆ: 5ì›” ë‘˜ì§¸ ì£¼ ì˜ˆìŠµ"
+                  placeholder="¿¹: 5¿ù µÑÂ° ÁÖ ¿¹½À"
                   autoComplete="off"
                   aria-invalid={!!form.formState.errors.title}
                   {...form.register("title")}
@@ -201,7 +138,7 @@ export function AddSetlistDialog({ open, onOpenChange }: AddSetlistDialogProps) 
               </Field>
 
               <Field>
-                <FieldLabel>ì½˜í‹° ë‚ ì§œ</FieldLabel>
+                <FieldLabel>ÄÜÆ¼ ³¯Â¥</FieldLabel>
                 <Popover>
                   <PopoverTrigger
                     nativeButton={false}
@@ -217,11 +154,7 @@ export function AddSetlistDialog({ open, onOpenChange }: AddSetlistDialogProps) 
                     }
                   >
                     <CalendarIcon className="size-4 opacity-70" />
-                    {eventDateValue ? (
-                      format(eventDateValue, "PPP", { locale: ko })
-                    ) : (
-                      <span>ë‚ ì§œ ì„ íƒ</span>
-                    )}
+                    {eventDateValue ? format(eventDateValue, "PPP", { locale: ko }) : <span>³¯Â¥ ¼±ÅÃ</span>}
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-2" align="start">
                     <Calendar
@@ -235,51 +168,27 @@ export function AddSetlistDialog({ open, onOpenChange }: AddSetlistDialogProps) 
                     />
                   </PopoverContent>
                 </Popover>
-                <FieldDescription>ì˜ˆë°°Â·ì—°ìŠµ ê¸°ì¤€ ë‚ ì§œë¥¼ ì„ íƒí•˜ì„¸ìš”.</FieldDescription>
                 <FieldError errors={[form.formState.errors.eventDate]} />
               </Field>
             </FieldGroup>
 
             <FieldGroup className="gap-3">
               <div className="flex items-end justify-between gap-2">
-                <span className="text-sm font-medium leading-none">ìˆ˜ë¡ê³¡ (YouTube)</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1 text-xs"
-                  onClick={() => append({ youtubeUrl: "" })}
-                >
+                <span className="text-sm font-medium leading-none">¼ö·Ï°î (YouTube)</span>
+                <Button type="button" variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => append({ youtubeUrl: "" })}>
                   <Plus className="size-3.5" />
-                  ê³¡ ì¤„ ì¶”ê°€
+                  °î ÁÙ Ãß°¡
                 </Button>
               </div>
-              <FieldDescription>ê° ì¤„ì— ì˜ìƒ ë§í¬ë¥¼ ë„£ìœ¼ë©´ ì¸ë„¤ì¼Â·ì œëª©ì´ ë¯¸ë¦¬ë³´ê¸°ë©ë‹ˆë‹¤.</FieldDescription>
-              {form.formState.errors.tracks &&
-              typeof form.formState.errors.tracks === "object" &&
-              "message" in form.formState.errors.tracks ? (
-                <FieldError>{String(form.formState.errors.tracks.message)}</FieldError>
-              ) : null}
-
-              <ul className="flex flex-col gap-4">
+              <ul className="flex flex-col gap-3">
                 {fields.map((field, index) => (
-                  <li
-                    key={field.id}
-                    className="rounded-lg border border-border/60 bg-card/50 p-5 shadow-sm"
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-                      <Field className="flex-1 gap-1.5">
-                        <FieldLabel htmlFor={`yt-${field.id}`} className="text-xs text-muted-foreground">
-                          ìœ íŠœë¸Œ URL Â· {index + 1}
-                        </FieldLabel>
-                        <Input
-                          id={`yt-${field.id}`}
-                          placeholder="https://www.youtube.com/watch?v=â€¦"
-                          aria-invalid={!!form.formState.errors.tracks?.[index]?.youtubeUrl}
-                          {...form.register(`tracks.${index}.youtubeUrl` as const)}
-                        />
-                        <FieldError errors={[form.formState.errors.tracks?.[index]?.youtubeUrl]} />
-                      </Field>
+                  <li key={field.id} className="rounded-lg border border-border/60 bg-card/50 p-4 shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="https://www.youtube.com/watch?v=¡¦"
+                        aria-invalid={!!form.formState.errors.tracks?.[index]?.youtubeUrl}
+                        {...form.register(`tracks.${index}.youtubeUrl` as const)}
+                      />
                       <Button
                         type="button"
                         variant="ghost"
@@ -287,14 +196,39 @@ export function AddSetlistDialog({ open, onOpenChange }: AddSetlistDialogProps) 
                         className="shrink-0 text-muted-foreground hover:text-destructive"
                         disabled={fields.length <= 1}
                         onClick={() => remove(index)}
-                        aria-label="ì´ ê³¡ ì¤„ ì‚­ì œ"
+                        aria-label="ÀÌ °î ÁÙ »èÁ¦"
                       >
                         <Trash2 className="size-4" />
                       </Button>
                     </div>
-                    <div className="mt-4">
-                      <TrackRowPreviewField control={form.control} index={index} />
-                    </div>
+                    <FieldError errors={[form.formState.errors.tracks?.[index]?.youtubeUrl]} />
+                  </li>
+                ))}
+              </ul>
+            </FieldGroup>
+
+            <FieldGroup className="gap-3">
+              <span className="text-sm font-medium leading-none">¶óÀÎ¾÷ ¹èÁ¤</span>
+              <FieldDescription>Æ÷Áö¼Çº° ¼¶±è ¸â¹ö¸¦ ¼±ÅÃÇÏ¼¼¿ä. ºñ¿öµÎ¸é ¹Ì¹èÁ¤À¸·Î ÀúÀåµË´Ï´Ù.</FieldDescription>
+              <ul className="grid gap-3 sm:grid-cols-2">
+                {TEAM_ROLE_OPTIONS.map((role, index) => (
+                  <li key={role.code} className="rounded-lg border border-border/60 bg-card/50 p-3">
+                    <input type="hidden" {...form.register(`lineup.${index}.roleCode` as const)} value={role.code} />
+                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                      {teamRoleLabel(role.code)}
+                    </label>
+                    <select
+                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+                      {...form.register(`lineup.${index}.memberId` as const)}
+                      defaultValue=""
+                    >
+                      <option value="">¹Ì¹èÁ¤</option>
+                      {memberOptions.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.username}
+                        </option>
+                      ))}
+                    </select>
                   </li>
                 ))}
               </ul>
@@ -302,22 +236,17 @@ export function AddSetlistDialog({ open, onOpenChange }: AddSetlistDialogProps) 
           </FieldSet>
 
           <div className="flex flex-col-reverse gap-2 border-t border-border/60 pt-4 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={form.formState.isSubmitting}
-            >
-              ì·¨ì†Œ
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={form.formState.isSubmitting}>
+              Ãë¼Ò
             </Button>
             <Button type="submit" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  ì €ì¥ ì¤‘â€¦
+                  ÀúÀå Áß¡¦
                 </>
               ) : (
-                "ì €ì¥"
+                "ÀúÀå"
               )}
             </Button>
           </div>
@@ -331,10 +260,12 @@ export function AddSetlistTriggerButton({
   className,
   variant = "outline",
   size = "sm",
+  teamMembers,
 }: {
   className?: string;
   variant?: React.ComponentProps<typeof Button>["variant"];
   size?: React.ComponentProps<typeof Button>["size"];
+  teamMembers: LineupMemberOption[];
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -347,9 +278,9 @@ export function AddSetlistTriggerButton({
         onClick={() => setOpen(true)}
       >
         <Plus className="size-4" />
-        ì½˜í‹° ì¶”ê°€
+        ÄÜÆ¼ Ãß°¡
       </Button>
-      <AddSetlistDialog open={open} onOpenChange={setOpen} />
+      <AddSetlistDialog open={open} onOpenChange={setOpen} teamMembers={teamMembers} />
     </>
   );
 }

@@ -1,13 +1,13 @@
 {
-  "name": "WorshipSync",
-  "short_name": "WorshipSync",
-  "description": "ì°¬ì–‘íŒ€ ì˜ˆìŠµÂ·ì•…ë³´Â·ì¼ì •Â·ì†Œí†µì„ í•œê³³ì—ì„œ",
+  "name": "Ahaba",
+  "short_name": "Ahaba",
+  "description": "Ahaba Âù¾çÆÀ ¿¹½À¡¤¾Çº¸¡¤ÀÏÁ¤¡¤¼ÒÅëÀ» ÇÑ°÷¿¡¼­",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#f4f4f5",
-  "theme_color": "#3730a3",
+  "background_color": "#f3f2ef",
+  "theme_color": "#4338ca",
   "icons": [
     {
       "src": "/icons/icon.svg",

@@ -1,6 +1,6 @@
 /**
- * Supabase `public` ìŠ¤í‚¤ë§ˆì— ëŒ€ì‘í•˜ëŠ” íƒ€ì….
- * ë§ˆì´ê·¸ë ˆì´ì…˜ í›„ `supabase gen types typescript`ë¡œ ì¬ìƒì„±í•´ ë™ê¸°í™”í•˜ëŠ” ê²ƒì„ ê¶Œì¥í•©ë‹ˆë‹¤.
+ * Supabase `public` ½ºÅ°¸¶¿¡ ´ëÀÀÇÏ´Â Å¸ÀÔ.
+ * ¸¶ÀÌ±×·¹ÀÌ¼Ç ÈÄ `supabase gen types typescript`·Î Àç»ı¼ºÇØ µ¿±âÈ­ÇÏ´Â °ÍÀ» ±ÇÀåÇÕ´Ï´Ù.
  */
 export type Json =
   | string
@@ -10,14 +10,13 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-/** DB ì €ì¥ìš© â€” UI ë¼ë²¨ì€ ë³„ë„ ë§¤í•‘ */
+/** DB ÀúÀå¿ë ? UI ¶óº§Àº º°µµ ¸ÅÇÎ */
 export type ProfileRole = "leader" | "member";
+export type TeamRoleCode = "L" | "M" | "S" | "D" | "A/G" | "B/G" | "E/G" | "V" | "STAFF";
 export type SetlistStatus = "prep" | "confirmed";
 export type AttendanceStatus = "attending" | "late" | "absent";
 export type AttendanceEventType = "practice" | "worship";
-/** ì¼ì •(schedules) ì¢…ë¥˜ */
 export type ScheduleKind = "practice" | "worship" | "social";
-/** ì¼ì •ë³„ ì°¸ì„ ì‘ë‹µ â€” ì°¸ì„ / ë¶ˆì°¸ / ë¯¸ì • */
 export type ScheduleAttendanceStatus = "attending" | "absent" | "pending";
 export type PostCategory = "prayer" | "feedback" | "general";
 
@@ -31,6 +30,9 @@ export type Database = {
           role: ProfileRole;
           avatar_url: string | null;
           team_id: string | null;
+          role_priority_1: TeamRoleCode | null;
+          role_priority_2: TeamRoleCode | null;
+          role_priority_3: TeamRoleCode | null;
           created_at: string;
           updated_at: string;
         };
@@ -40,6 +42,9 @@ export type Database = {
           role?: ProfileRole;
           avatar_url?: string | null;
           team_id?: string | null;
+          role_priority_1?: TeamRoleCode | null;
+          role_priority_2?: TeamRoleCode | null;
+          role_priority_3?: TeamRoleCode | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -49,6 +54,9 @@ export type Database = {
           role?: ProfileRole;
           avatar_url?: string | null;
           team_id?: string | null;
+          role_priority_1?: TeamRoleCode | null;
+          role_priority_2?: TeamRoleCode | null;
+          role_priority_3?: TeamRoleCode | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -127,6 +135,33 @@ export type Database = {
           setlist_id?: string;
           song_id?: string;
           order_index?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      setlist_lineups: {
+        Row: {
+          id: string;
+          setlist_id: string;
+          role_code: TeamRoleCode;
+          member_id: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          setlist_id: string;
+          role_code: TeamRoleCode;
+          member_id: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          setlist_id?: string;
+          role_code?: TeamRoleCode;
+          member_id?: string;
           created_at?: string;
           updated_at?: string;
         };

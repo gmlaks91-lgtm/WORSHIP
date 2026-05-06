@@ -25,9 +25,12 @@ export function AppBottomNav({ className }: AppBottomNavProps) {
         "shadow-[0_-4px_24px_-8px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_24px_-8px_rgba(0,0,0,0.45)]",
         className,
       )}
-      aria-label="ì£¼ìš” ë©”ë‰´"
+      aria-label="ÁÖ¿ä ¸Þ´º"
     >
-      <div className="mx-auto grid max-w-3xl grid-cols-5 px-1 pt-2 pb-1 sm:px-2">
+      <div
+        className="mx-auto grid max-w-3xl px-1 pt-2 pb-1 sm:px-2"
+        style={{ gridTemplateColumns: `repeat(${APP_NAV_ITEMS.length}, minmax(0, 1fr))` }}
+      >
         {APP_NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
@@ -36,9 +39,7 @@ export function AppBottomNav({ className }: AppBottomNavProps) {
               href={href}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 rounded-lg py-2.5 text-[10px] font-medium transition-colors sm:text-[11px]",
-                active
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground",
+                active ? "text-primary" : "text-muted-foreground hover:text-foreground",
               )}
             >
               <span

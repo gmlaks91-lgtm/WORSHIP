@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { TeamRoleCode } from "@/types/database";
 import { createClient } from "@/utils/supabase/server";
 
 export type SetlistSongRow = {
@@ -10,12 +11,19 @@ export type SetlistSongRow = {
   order_index: number;
 };
 
+export type SetlistLineupRow = {
+  role_code: TeamRoleCode;
+  member_id: string;
+  member_name: string;
+};
+
 export type PrepSetlistRow = {
   id: string;
   title: string;
   event_date: string;
   status: "prep" | "confirmed";
   songs: SetlistSongRow[];
+  lineup: SetlistLineupRow[];
 };
 
 export type GetSetlistsResult = {
@@ -23,7 +31,6 @@ export type GetSetlistsResult = {
   error: string | null;
 };
 
-/** Supabase 중첩 select — 제네릭에 관계가 없어 수동으로 형태를 고정합니다. */
 type SetlistQueryRow = {
   id: string;
   title: string;
@@ -40,11 +47,15 @@ type SetlistQueryRow = {
         } | null;
       }[]
     | null;
+  setlist_lineups:
+    | {
+        role_code: TeamRoleCode;
+        member_id: string;
+        profiles: { username: string } | null;
+      }[]
+    | null;
 };
 
-/**
- * 최근 `prep` 상태 콘티와 곡(setlist_songs → songs)을 조인해 반환합니다.
- */
 export async function getSetlists(options?: { limit?: number }): Promise<GetSetlistsResult> {
   const limit = options?.limit ?? 10;
   try {
@@ -66,6 +77,11 @@ export async function getSetlists(options?: { limit?: number }): Promise<GetSetl
             youtube_url,
             description
           )
+        ),
+        setlist_lineups (
+          role_code,
+          member_id,
+          profiles ( username )
         )
       `,
       )
@@ -92,18 +108,27 @@ export async function getSetlists(options?: { limit?: number }): Promise<GetSetl
         }))
         .sort((a, b) => a.order_index - b.order_index);
 
+      const lineup = (row.setlist_lineups ?? [])
+        .map((line) => ({
+          role_code: line.role_code,
+          member_id: line.member_id,
+          member_name: line.profiles?.username ?? "�� �� ����",
+        }))
+        .sort((a, b) => a.role_code.localeCompare(b.role_code));
+
       return {
         id: row.id,
         title: row.title,
         event_date: row.event_date,
         status: row.status as PrepSetlistRow["status"],
         songs,
+        lineup,
       };
     });
 
     return { setlists, error: null };
   } catch (e) {
-    const message = e instanceof Error ? e.message : "알 수 없는 오류";
+    const message = e instanceof Error ? e.message : "�� �� ���� ����";
     return { setlists: [], error: message };
   }
 }
