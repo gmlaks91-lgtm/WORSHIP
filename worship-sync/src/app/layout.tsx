@@ -16,12 +16,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ahaba",
-  description: "Ahaba 찬양팀의 콘티, 악보, 일정, 팀 라인업을 한곳에서 관리합니다.",
+  title: "Ahava",
+  description: "Ahava 찬양팀의 콘티, 악보, 일정, 팀 라인업을 한곳에서 관리합니다.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    title: "Ahaba",
+    title: "Ahava",
     statusBarStyle: "default",
   },
   formatDetection: {

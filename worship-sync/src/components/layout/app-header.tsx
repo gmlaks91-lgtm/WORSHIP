@@ -41,7 +41,7 @@ export async function AppHeader({ className }: AppHeaderProps) {
           <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
             찬양팀
           </span>
-          <span className="text-base font-semibold tracking-tight text-foreground sm:text-lg">Ahaba</span>
+          <span className="text-base font-semibold tracking-tight text-foreground sm:text-lg">Ahava</span>
         </Link>
         <div className="flex items-center gap-2">
           <span className="hidden text-xs text-muted-foreground lg:inline">아하바 찬양팀</span>

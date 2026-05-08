@@ -1,6 +1,5 @@
 import "server-only";
 
-import { ensureRecurringSchedules } from "@/features/schedule/lib/ensureRecurringSchedules";
 import { getSetlists, type PrepSetlistRow } from "@/features/setlist/queries/getSetlists";
 import { getRecentSheetsForDashboard } from "@/features/sheets/queries/getSheets";
 import { youtubePlaylistEmbedUrl } from "@/features/team-settings/lib/youtube-playlist";
@@ -39,12 +38,6 @@ export async function getPersonalDashboardData(): Promise<PersonalDashboardData>
   let canManageTeamPlaylist = false;
 
   const nowIso = new Date().toISOString();
-
-  try {
-    await ensureRecurringSchedules(supabase);
-  } catch {
-    errors.push("반복 일정 자동 생성 중 문제가 발생했습니다.");
-  }
 
   const [{ setlists, error: setlistErr }, sheets] = await Promise.all([
     getSetlists({ limit: 3 }),

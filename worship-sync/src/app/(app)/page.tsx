@@ -11,7 +11,7 @@ import { createClient } from "@/utils/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function AhabaDashboardPage() {
+export default async function AhavaDashboardPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -56,7 +56,7 @@ export default async function AhabaDashboardPage() {
       />
 
       <section className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Ahaba</p>
+        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Ahava</p>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">이 주의 콘티</h1>
       </section>
 
