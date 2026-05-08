@@ -101,7 +101,7 @@ export function SongListCard({ song, className }: SongListCardProps) {
                   onOpenChange={setSheetOpen}
                   songId={song.id}
                   songTitle={song.title}
-                  fileUrl={sheet.file_url}
+                  fileUrls={sheet.image_urls}
                   memo={sheet.memo}
                 />
               </>

@@ -1,26 +1,76 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { isImageUrl, isPdfUrl } from "@/features/sheets/lib/file-kind";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type SheetMediaProps = {
-  fileUrl: string;
+  fileUrls: string[];
   className?: string;
 };
 
 /**
- * PDF는 iframe, 이미지는 next/image(object-contain)로 표시합니다.
+ * 다중 악보 URL을 캐러셀로 표시합니다.
  */
-export function SheetMedia({ fileUrl, className }: SheetMediaProps) {
+export function SheetMedia({ fileUrls, className }: SheetMediaProps) {
+  const [index, setIndex] = useState(0);
+  const total = fileUrls.length;
+  const currentIndex = total === 0 ? 0 : Math.min(index, total - 1);
+  const fileUrl = fileUrls[currentIndex] ?? "";
+
+  if (total === 0) {
+    return (
+      <div
+        className={cn(
+          "flex flex-1 flex-col items-center justify-center gap-2 bg-muted/30 p-6 text-center text-sm text-muted-foreground",
+          className,
+        )}
+      >
+        <p>등록된 악보 이미지가 없습니다.</p>
+      </div>
+    );
+  }
+
   if (isPdfUrl(fileUrl)) {
     return (
-      <iframe
-        title="악보 PDF"
-        src={fileUrl}
-        className={cn("h-full w-full border-0 bg-muted/30", className)}
-      />
+      <div className={cn("relative flex h-full w-full flex-col", className)}>
+        <iframe
+          title="악보 PDF"
+          src={fileUrl}
+          className="h-full w-full border-0 bg-muted/30"
+        />
+        {total > 1 ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
+            <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/90 px-2 py-1 shadow-sm">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => setIndex((prev) => (prev - 1 + total) % total)}
+                aria-label="이전 악보"
+              >
+                <ChevronLeft className="size-3.5" />
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                {currentIndex + 1} / {total}
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => setIndex((prev) => (prev + 1) % total)}
+                aria-label="다음 악보"
+              >
+                <ChevronRight className="size-3.5" />
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </div>
     );
   }
 
@@ -34,12 +84,39 @@ export function SheetMedia({ fileUrl, className }: SheetMediaProps) {
       >
         <Image
           src={fileUrl}
-          alt="악보"
+          alt={`악보 ${currentIndex + 1}`}
           fill
           priority
           sizes="100vw"
           className="object-contain"
         />
+        {total > 1 ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
+            <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/90 px-2 py-1 shadow-sm">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => setIndex((prev) => (prev - 1 + total) % total)}
+                aria-label="이전 악보"
+              >
+                <ChevronLeft className="size-3.5" />
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                {currentIndex + 1} / {total}
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => setIndex((prev) => (prev + 1) % total)}
+                aria-label="다음 악보"
+              >
+                <ChevronRight className="size-3.5" />
+              </Button>
+            </div>
+          </div>
+        ) : null}
       </div>
     );
   }

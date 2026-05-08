@@ -1,7 +1,7 @@
 export type SheetSummary = {
   id: string;
   song_id: string;
-  file_url: string;
+  image_urls: string[];
   memo: string | null;
   created_at: string;
 };

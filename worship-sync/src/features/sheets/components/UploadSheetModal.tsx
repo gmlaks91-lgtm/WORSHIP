@@ -26,14 +26,6 @@ import { cn } from "@/lib/utils";
 
 const EMPTY_SONGS: Array<{ id: string; title: string }> = [];
 
-const ACCEPT = {
-  "application/pdf": [".pdf"],
-  "image/png": [".png"],
-  "image/jpeg": [".jpg", ".jpeg"],
-  "image/webp": [".webp"],
-  "image/gif": [".gif"],
-} as const;
-
 export type UploadSheetModalProps =
   | {
       open: boolean;
@@ -55,7 +47,7 @@ export function UploadSheetModal(props: UploadSheetModalProps) {
 
   const [selectedSongId, setSelectedSongId] = useState("");
   const [songQuery, setSongQuery] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [memo, setMemo] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -75,42 +67,47 @@ export function UploadSheetModal(props: UploadSheetModalProps) {
   const reset = useCallback(() => {
     setSelectedSongId("");
     setSongQuery("");
-    setFile(null);
+    setFiles([]);
     setMemo("");
   }, []);
 
   const onDrop = useCallback((accepted: File[]) => {
-    const next = accepted[0];
-    if (next) setFile(next);
+    if (accepted.length > 0) setFiles(accepted);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive, open: openFilePicker } = useDropzone({
     onDrop,
-    multiple: false,
-    maxFiles: 1,
-    accept: ACCEPT,
+    multiple: true,
+    maxFiles: 20,
+    accept: {
+      "image/png": [".png"],
+      "image/jpeg": [".jpg", ".jpeg"],
+      "image/webp": [".webp"],
+      "image/gif": [".gif"],
+    },
     disabled: busy,
   });
 
   const fileLabel = useMemo(() => {
-    if (!file) return "파일을 선택하세요";
-    return file.name;
-  }, [file]);
+    if (files.length === 0) return "이미지 파일을 선택하세요";
+    if (files.length === 1) return files[0].name;
+    return `${files[0].name} 외 ${files.length - 1}장`;
+  }, [files]);
 
   const onSubmit = async () => {
     if (!songId) {
       toastError("곡을 먼저 선택해 주세요.");
       return;
     }
-    if (!file) {
-      toastError("업로드할 파일을 선택해 주세요.");
+    if (files.length === 0) {
+      toastError("업로드할 이미지 파일을 선택해 주세요.");
       return;
     }
 
     setBusy(true);
     try {
       await toastPromise(
-        uploadSheetFromClient(songId, file, memo),
+        uploadSheetFromClient(songId, files, memo),
         "악보를 업로드하는 중이에요…",
       ).unwrap();
 
@@ -143,11 +140,11 @@ export function UploadSheetModal(props: UploadSheetModalProps) {
             <DialogDescription className="text-xs leading-relaxed">
               {mode === "song" ? (
                 <>
-                  <span className="font-medium text-foreground">{props.songTitle}</span> 곡에 PDF 또는
-                  이미지를 연결합니다.
+                  <span className="font-medium text-foreground">{props.songTitle}</span> 곡에 여러 장의
+                  악보 이미지를 연결합니다.
                 </>
               ) : (
-                <>등록된 곡을 고른 뒤, PDF 또는 이미지 파일을 올려 주세요.</>
+                <>등록된 곡을 고른 뒤, 여러 장의 이미지 파일을 올려 주세요.</>
               )}
             </DialogDescription>
           </DialogHeader>
@@ -233,7 +230,7 @@ export function UploadSheetModal(props: UploadSheetModalProps) {
                 <p className="text-sm font-medium text-foreground">
                   {isDragActive ? "여기에 놓으세요" : "드래그 앤 드롭 또는 클릭"}
                 </p>
-                <p className="text-xs text-muted-foreground">PDF, PNG, JPG, WebP, GIF · 최대 50MB</p>
+                  <p className="text-xs text-muted-foreground">PNG, JPG, WebP, GIF · 최대 20장</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Button
@@ -251,12 +248,13 @@ export function UploadSheetModal(props: UploadSheetModalProps) {
                 <span className="text-[11px] text-muted-foreground">또는</span>
                 <Input
                   type="file"
-                  accept="application/pdf,image/png,image/jpeg,image/webp,image/gif"
+                  multiple
+                  accept="image/png,image/jpeg,image/webp,image/gif"
                   disabled={busy}
                   className="h-8 flex-1 text-xs file:mr-2 file:text-xs"
                   onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) setFile(f);
+                    const next = Array.from(e.target.files ?? []);
+                    if (next.length > 0) setFiles(next);
                   }}
                 />
               </div>
@@ -290,7 +288,7 @@ export function UploadSheetModal(props: UploadSheetModalProps) {
               onClick={onSubmit}
               disabled={
                 busy ||
-                !file ||
+                files.length === 0 ||
                 !songId ||
                 (mode === "library" && !canPickSong)
               }

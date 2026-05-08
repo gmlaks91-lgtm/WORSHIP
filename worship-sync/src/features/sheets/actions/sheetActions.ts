@@ -7,7 +7,7 @@ import { createClient } from "@/utils/supabase/server";
 
 const registerSheetSchema = z.object({
   songId: z.string().uuid(),
-  fileUrl: z.string().url(),
+  imageUrls: z.array(z.string().url()).min(1, "악보 이미지를 1장 이상 업로드해 주세요."),
   memo: z.string().max(4000).optional(),
 });
 
@@ -22,7 +22,7 @@ export async function registerSheet(
     return { ok: false, message: msg || "입력값을 확인하세요." };
   }
 
-  const { songId, fileUrl } = parsed.data;
+  const { songId, imageUrls } = parsed.data;
   const memo =
     parsed.data.memo === undefined
       ? null
@@ -52,7 +52,7 @@ export async function registerSheet(
 
     const { error: insertError } = await supabase.from("sheets").insert({
       song_id: songId,
-      file_url: fileUrl,
+      image_urls: imageUrls,
       memo,
     });
 

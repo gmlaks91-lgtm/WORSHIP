@@ -14,7 +14,7 @@ export async function getLatestSheetsBySongIds(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("sheets")
-    .select("id, song_id, file_url, memo, created_at")
+    .select("id, song_id, image_urls, memo, created_at")
     .in("song_id", songIds)
     .order("created_at", { ascending: false });
 
@@ -26,7 +26,7 @@ export async function getLatestSheetsBySongIds(
     map[row.song_id] = {
       id: row.id,
       song_id: row.song_id,
-      file_url: row.file_url,
+      image_urls: row.image_urls ?? [],
       memo: row.memo,
       created_at: row.created_at,
     };
@@ -45,14 +45,14 @@ export type RecentSheetForDashboard = {
   id: string;
   song_id: string;
   song_title: string;
-  file_url: string;
+  image_urls: string[];
   created_at: string;
 };
 
 type SheetWithSongTitle = {
   id: string;
   song_id: string;
-  file_url: string;
+  image_urls: string[];
   created_at: string;
   songs: { title: string } | null;
 };
@@ -68,7 +68,7 @@ export async function getRecentSheetsForDashboard(
       `
       id,
       song_id,
-      file_url,
+      image_urls,
       created_at,
       songs ( title )
     `,
@@ -82,7 +82,7 @@ export async function getRecentSheetsForDashboard(
     id: row.id,
     song_id: row.song_id,
     song_title: row.songs?.title ?? "알 수 없는 곡",
-    file_url: row.file_url,
+    image_urls: row.image_urls ?? [],
     created_at: row.created_at,
   }));
 }

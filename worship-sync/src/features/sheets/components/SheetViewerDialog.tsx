@@ -19,7 +19,7 @@ type SheetViewerDialogProps = {
   onOpenChange: (open: boolean) => void;
   songId: string;
   songTitle: string;
-  fileUrl: string;
+  fileUrls: string[];
   memo: string | null;
 };
 
@@ -28,7 +28,7 @@ export function SheetViewerDialog({
   onOpenChange,
   songId,
   songTitle,
-  fileUrl,
+  fileUrls,
   memo,
 }: SheetViewerDialogProps) {
   return (
@@ -42,7 +42,7 @@ export function SheetViewerDialog({
       >
         <DialogHeader className="sr-only">
           <DialogTitle>{songTitle} 악보</DialogTitle>
-          <DialogDescription>PDF 또는 이미지 악보 뷰어</DialogDescription>
+          <DialogDescription>다중 이미지 악보 뷰어</DialogDescription>
         </DialogHeader>
 
         <div className="flex shrink-0 items-start gap-2 border-b border-border/70 bg-background/95 px-3 py-3 backdrop-blur-md sm:px-4">
@@ -74,7 +74,7 @@ export function SheetViewerDialog({
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <SheetMedia fileUrl={fileUrl} className="min-h-0 flex-1" />
+          <SheetMedia fileUrls={fileUrls} className="min-h-0 flex-1" />
         </div>
       </DialogContent>
     </Dialog>

@@ -57,7 +57,7 @@ export default async function SheetForSongPage({
       </header>
 
       <div className="flex min-h-[60vh] flex-1 flex-col overflow-hidden sm:min-h-[70vh]">
-        <SheetMedia fileUrl={sheet.file_url} className="min-h-0 flex-1" />
+        <SheetMedia fileUrls={sheet.image_urls} className="min-h-0 flex-1" />
       </div>
     </div>
   );
