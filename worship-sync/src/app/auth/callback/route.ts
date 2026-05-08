@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   const host = forwardedHost ?? requestHeaders.get("host");
   const safeOrigin =
     host && forwardedProto ? `${forwardedProto}://${host}` : new URL(request.url).origin;
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const safeNext = sanitizeNextPath(next);
 
   if (!code) {
     return NextResponse.redirect(`${safeOrigin}/login?error=missing_code`);
@@ -66,4 +66,10 @@ export async function GET(request: Request) {
     response.cookies.set(name, value, options as never);
   });
   return response;
+}
+
+function sanitizeNextPath(next: string) {
+  if (!next.startsWith("/") || next.startsWith("//")) return "/";
+  if (next === "/login" || next.startsWith("/auth")) return "/";
+  return next;
 }

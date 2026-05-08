@@ -11,7 +11,7 @@ import { createClient } from "@/utils/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function SmartSetlistDashboardPage() {
+export default async function AhabaDashboardPage() {
   const supabase = await createClient();
   const {
     data: { user },
