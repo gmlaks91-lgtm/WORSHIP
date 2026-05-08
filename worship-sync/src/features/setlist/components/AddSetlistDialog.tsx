@@ -12,6 +12,7 @@ import {
   addSetlistFormSchema,
   type AddSetlistFormValues,
 } from "@/features/setlist/schemas/addSetlist";
+import { fetchYoutubeOEmbedTitle } from "@/features/setlist/utils/youtube-meta";
 import { getYoutubeVideoId } from "@/features/setlist/utils/youtube";
 import { isMultiMemberRole, TEAM_ROLE_OPTIONS, teamRoleLabel, type TeamRoleCode } from "@/lib/team-roles";
 import { Button } from "@/components/ui/button";
@@ -113,7 +114,7 @@ export function AddSetlistDialog({
     defaultValues: {
       title: "",
       eventDate: new Date(),
-      tracks: [{ youtubeUrl: "" }],
+      tracks: [{ title: "", youtubeUrl: "" }],
       lineup: makeDefaultLineup(),
     },
   });
@@ -130,7 +131,7 @@ export function AddSetlistDialog({
     form.reset({
       title: "",
       eventDate: new Date(),
-      tracks: [{ youtubeUrl: "" }],
+      tracks: [{ title: "", youtubeUrl: "" }],
       lineup: makeDefaultLineup(),
     });
   };
@@ -140,6 +141,7 @@ export function AddSetlistDialog({
       title: values.title.trim(),
       eventDate: format(values.eventDate, "yyyy-MM-dd"),
       tracks: values.tracks.map((t) => ({
+        title: t.title.trim(),
         youtubeUrl: t.youtubeUrl.trim(),
       })),
       lineup: values.lineup.map((l) => ({ roleCode: l.roleCode, memberIds: l.memberIds })),
@@ -232,8 +234,8 @@ export function AddSetlistDialog({
 
             <FieldGroup className="gap-3">
               <div className="flex items-end justify-between gap-2">
-                <span className="text-sm font-medium leading-none">수록곡 (YouTube)</span>
-                <Button type="button" variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => append({ youtubeUrl: "" })}>
+                <span className="text-sm font-medium leading-none">수록곡</span>
+                <Button type="button" variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => append({ title: "", youtubeUrl: "" })}>
                   <Plus className="size-3.5" />
                   줄 추가
                 </Button>
@@ -241,11 +243,29 @@ export function AddSetlistDialog({
               <ul className="flex flex-col gap-3">
                 {fields.map((field, index) => (
                   <li key={field.id} className="rounded-lg border border-border/60 bg-card/50 p-4 shadow-sm">
-                    <div className="flex items-center gap-2">
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="곡 제목"
+                        aria-invalid={!!form.formState.errors.tracks?.[index]?.title}
+                        {...form.register(`tracks.${index}.title` as const)}
+                      />
+                      <FieldError errors={[form.formState.errors.tracks?.[index]?.title]} />
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
                       <Input
                         placeholder="https://www.youtube.com/watch?v=..."
                         aria-invalid={!!form.formState.errors.tracks?.[index]?.youtubeUrl}
                         {...form.register(`tracks.${index}.youtubeUrl` as const)}
+                        onBlur={async (e) => {
+                          const url = e.target.value.trim();
+                          if (!url) return;
+                          const currentTitle = form.getValues(`tracks.${index}.title`).trim();
+                          if (currentTitle) return;
+                          const autoTitle = await fetchYoutubeOEmbedTitle(url);
+                          if (autoTitle) {
+                            form.setValue(`tracks.${index}.title`, autoTitle, { shouldValidate: true });
+                          }
+                        }}
                       />
                       <Button
                         type="button"

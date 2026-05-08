@@ -44,5 +44,6 @@ export function extractYouTubeVideoId(input: string) {
 }
 
 export function youtubeVideoEmbedUrl(videoId: string) {
-  return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
+  const encoded = encodeURIComponent(videoId);
+  return `https://www.youtube.com/embed/${encoded}?loop=1&playlist=${encoded}`;
 }

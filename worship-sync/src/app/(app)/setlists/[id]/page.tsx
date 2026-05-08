@@ -53,8 +53,11 @@ export default async function SetlistDetailPage({ params }: { params: Promise<{ 
   }));
   const initialTracks = (data.setlist_songs ?? [])
     .sort((a, b) => a.order_index - b.order_index)
-    .map((row) => row.songs?.youtube_url ?? "")
-    .filter((url) => !!url);
+    .map((row) => ({
+      title: row.songs?.title ?? "",
+      youtubeUrl: row.songs?.youtube_url ?? "",
+    }))
+    .filter((row) => !!row.youtubeUrl);
 
   return (
     <div className="flex flex-1 flex-col gap-6">

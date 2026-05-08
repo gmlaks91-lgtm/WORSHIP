@@ -18,6 +18,7 @@ const teamRoleCodeValues = TEAM_ROLE_OPTIONS.map((r) => r.code) as [
 const roleCodeSchema = z.enum(teamRoleCodeValues);
 
 export const addSetlistTrackSchema = z.object({
+  title: z.string().trim().min(1, "곡 제목을 입력하세요"),
   youtubeUrl: z
     .string()
     .min(1, "YouTube URL을 입력하세요")

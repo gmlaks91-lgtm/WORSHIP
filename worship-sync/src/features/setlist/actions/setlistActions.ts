@@ -101,7 +101,7 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
 
 async function resolveTrackSongIds(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  tracks: Array<{ youtubeUrl: string }>,
+  tracks: Array<{ title: string; youtubeUrl: string }>,
 ): Promise<{ ok: true; songIds: string[] } | { ok: false; message: string }> {
   const { data: existingSongs, error: songsReadError } = await supabase.from("songs").select("id, youtube_url");
   if (songsReadError) {
@@ -122,10 +122,11 @@ async function resolveTrackSongIds(
     }
 
     let songId = byVideoId.get(videoId);
+    const preferredTitle = track.title.trim();
     if (!songId) {
       const canonical = toYoutubeWatchUrl(videoId);
       const oembedTitle = await fetchYoutubeOEmbedTitle(canonical);
-      const songTitle = oembedTitle ?? `YouTube - ${videoId}`;
+      const songTitle = preferredTitle || oembedTitle || `YouTube - ${videoId}`;
 
       const { data: inserted, error: insertSongError } = await supabase
         .from("songs")
@@ -139,6 +140,9 @@ async function resolveTrackSongIds(
 
       songId = inserted.id;
       byVideoId.set(videoId, songId);
+    } else if (preferredTitle) {
+      // 같은 URL의 기존 곡이 있어도 리더가 제목을 명시적으로 수정할 수 있게 동기화
+      await supabase.from("songs").update({ title: preferredTitle }).eq("id", songId);
     }
 
     songIdsOrdered.push(songId);

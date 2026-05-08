@@ -34,6 +34,13 @@ const commentIdSchema = z.object({ commentId: z.string().uuid() });
 
 export type BoardActionResult = { ok: true } | { ok: false; message: string };
 
+function formatFeedbackTitle(songTitle: string) {
+  const now = new Date();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  return `[${mm}월 ${dd}일] ${songTitle.trim()} 악보 피드백`;
+}
+
 /** 로그인 세션 확인 후 게시글 저장 */
 export async function createPost(
   category: PostCategory,
@@ -71,6 +78,15 @@ export async function createPost(
     const message = e instanceof Error ? e.message : "알 수 없는 오류입니다.";
     return { ok: false, message };
   }
+}
+
+export async function createSheetFeedbackPost(
+  songTitle: string,
+  feedbackContent: string,
+): Promise<BoardActionResult> {
+  const title = formatFeedbackTitle(songTitle);
+  const mergedContent = `${title}\n\n${feedbackContent.trim()}`;
+  return createPost("feedback", mergedContent);
 }
 
 /** 특정 게시글에 댓글 저장 */

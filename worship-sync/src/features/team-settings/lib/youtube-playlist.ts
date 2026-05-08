@@ -21,5 +21,5 @@ export function extractYouTubePlaylistId(input: string) {
 }
 
 export function youtubePlaylistEmbedUrl(playlistId: string) {
-  return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(playlistId)}`;
+  return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(playlistId)}&loop=1`;
 }

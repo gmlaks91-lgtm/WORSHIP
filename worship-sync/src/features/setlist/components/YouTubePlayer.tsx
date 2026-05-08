@@ -76,6 +76,8 @@ export function YouTubePlayer({ className }: YouTubePlayerProps) {
               height: "100%",
               playerVars: {
                 autoplay: 1,
+                loop: 1,
+                playlist: current.videoId,
                 modestbranding: 1,
                 rel: 0,
               },
