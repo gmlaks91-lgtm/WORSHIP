@@ -124,10 +124,34 @@ export async function deleteSchedule(raw: z.infer<typeof deleteScheduleSchema>):
       return { ok: false, message: "리더만 일정을 삭제할 수 있습니다." };
     }
 
+    const { data: target, error: readError } = await supabase
+      .from("schedules")
+      .select("id, title, kind, starts_at")
+      .eq("id", parsed.data.scheduleId)
+      .maybeSingle();
+    if (readError) {
+      return { ok: false, message: readError.message };
+    }
+    if (!target) {
+      return { ok: false, message: "이미 삭제된 일정입니다." };
+    }
+
     const { error } = await supabase.from("schedules").delete().eq("id", parsed.data.scheduleId);
 
     if (error) {
       return { ok: false, message: error.message };
+    }
+
+    const recurringTitles = new Set(["토요일 연습", "주일 예배"]);
+    if ((target.kind === "practice" || target.kind === "worship") && recurringTitles.has(target.title)) {
+      await supabase.from("recurring_schedule_exclusions").upsert(
+        {
+          title: target.title,
+          kind: target.kind,
+          starts_at: target.starts_at,
+        },
+        { onConflict: "title,kind,starts_at", ignoreDuplicates: true },
+      );
     }
 
     revalidatePath("/schedule");

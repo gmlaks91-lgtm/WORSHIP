@@ -268,6 +268,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      recurring_schedule_exclusions: {
+        Row: {
+          id: string;
+          title: string;
+          kind: ScheduleKind;
+          starts_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          kind: ScheduleKind;
+          starts_at: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          kind?: ScheduleKind;
+          starts_at?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       attendances: {
         Row: {
           id: string;

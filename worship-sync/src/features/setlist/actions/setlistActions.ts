@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 import { fetchYoutubeOEmbedTitle } from "@/features/setlist/utils/youtube-meta";
 import {
@@ -13,6 +14,13 @@ import type { TeamRoleCode } from "@/types/database";
 import { createClient } from "@/utils/supabase/server";
 
 export type CreatePrepSetlistResult = { ok: true } | { ok: false; message: string };
+const updatePrepSetlistSchema = z.object({
+  setlistId: z.string().uuid(),
+  title: z.string().min(1),
+  eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  tracks: createPrepSetlistPayloadSchema.shape.tracks,
+  lineup: createPrepSetlistPayloadSchema.shape.lineup,
+});
 
 function buildLineupRows(
   setlistId: string,
@@ -53,53 +61,13 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
 
     const setlistId = setlist.id;
 
-    const { data: existingSongs, error: songsReadError } = await supabase
-      .from("songs")
-      .select("id, youtube_url");
-    if (songsReadError) {
+    const songIdsOrdered = await resolveTrackSongIds(supabase, tracks);
+    if (!songIdsOrdered.ok) {
       await supabase.from("setlists").delete().eq("id", setlistId);
-      return { ok: false, message: songsReadError.message };
+      return { ok: false, message: songIdsOrdered.message };
     }
 
-    const byVideoId = new Map<string, string>();
-    for (const row of existingSongs ?? []) {
-      const vid = getYoutubeVideoId(row.youtube_url);
-      if (vid) byVideoId.set(vid, row.id);
-    }
-
-    const songIdsOrdered: string[] = [];
-    for (const track of tracks) {
-      const videoId = getYoutubeVideoId(track.youtubeUrl);
-      if (!videoId) {
-        await supabase.from("setlists").delete().eq("id", setlistId);
-        return { ok: false, message: "유효하지 않은 YouTube URL이 포함되어 있습니다." };
-      }
-
-      let songId = byVideoId.get(videoId);
-      if (!songId) {
-        const canonical = toYoutubeWatchUrl(videoId);
-        const oembedTitle = await fetchYoutubeOEmbedTitle(canonical);
-        const songTitle = oembedTitle ?? `YouTube - ${videoId}`;
-
-        const { data: inserted, error: insertSongError } = await supabase
-          .from("songs")
-          .insert({ title: songTitle, youtube_url: canonical, description: null })
-          .select("id")
-          .single();
-
-        if (insertSongError || !inserted) {
-          await supabase.from("setlists").delete().eq("id", setlistId);
-          return { ok: false, message: insertSongError?.message ?? "곡을 생성하지 못했습니다." };
-        }
-
-        songId = inserted.id;
-        byVideoId.set(videoId, songId);
-      }
-
-      songIdsOrdered.push(songId);
-    }
-
-    const songRows = songIdsOrdered.map((songId, index) => ({
+    const songRows = songIdsOrdered.songIds.map((songId, index) => ({
       setlist_id: setlistId,
       song_id: songId,
       order_index: index,
@@ -124,6 +92,109 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
     }
 
     revalidatePath("/");
+    return { ok: true };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";
+    return { ok: false, message };
+  }
+}
+
+async function resolveTrackSongIds(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  tracks: Array<{ youtubeUrl: string }>,
+): Promise<{ ok: true; songIds: string[] } | { ok: false; message: string }> {
+  const { data: existingSongs, error: songsReadError } = await supabase.from("songs").select("id, youtube_url");
+  if (songsReadError) {
+    return { ok: false, message: songsReadError.message };
+  }
+
+  const byVideoId = new Map<string, string>();
+  for (const row of existingSongs ?? []) {
+    const vid = getYoutubeVideoId(row.youtube_url);
+    if (vid) byVideoId.set(vid, row.id);
+  }
+
+  const songIdsOrdered: string[] = [];
+  for (const track of tracks) {
+    const videoId = getYoutubeVideoId(track.youtubeUrl);
+    if (!videoId) {
+      return { ok: false, message: "유효하지 않은 YouTube URL이 포함되어 있습니다." };
+    }
+
+    let songId = byVideoId.get(videoId);
+    if (!songId) {
+      const canonical = toYoutubeWatchUrl(videoId);
+      const oembedTitle = await fetchYoutubeOEmbedTitle(canonical);
+      const songTitle = oembedTitle ?? `YouTube - ${videoId}`;
+
+      const { data: inserted, error: insertSongError } = await supabase
+        .from("songs")
+        .insert({ title: songTitle, youtube_url: canonical, description: null })
+        .select("id")
+        .single();
+
+      if (insertSongError || !inserted) {
+        return { ok: false, message: insertSongError?.message ?? "곡을 생성하지 못했습니다." };
+      }
+
+      songId = inserted.id;
+      byVideoId.set(videoId, songId);
+    }
+
+    songIdsOrdered.push(songId);
+  }
+
+  return { ok: true, songIds: songIdsOrdered };
+}
+
+export async function updatePrepSetlist(raw: z.infer<typeof updatePrepSetlistSchema>): Promise<CreatePrepSetlistResult> {
+  const parsed = updatePrepSetlistSchema.safeParse(raw);
+  if (!parsed.success) {
+    const msg = parsed.error.issues.map((i) => i.message).join(", ");
+    return { ok: false, message: msg || "입력값을 확인해 주세요." };
+  }
+
+  const { setlistId, title, eventDate, tracks, lineup } = parsed.data;
+
+  try {
+    const supabase = await createClient();
+    const leader = await requireLeader(supabase);
+    if (!leader.ok) return { ok: false, message: leader.message };
+
+    const { error: updateSetlistErr } = await supabase
+      .from("setlists")
+      .update({ title, event_date: eventDate })
+      .eq("id", setlistId);
+    if (updateSetlistErr) return { ok: false, message: updateSetlistErr.message };
+
+    const songIdsOrdered = await resolveTrackSongIds(supabase, tracks);
+    if (!songIdsOrdered.ok) return { ok: false, message: songIdsOrdered.message };
+
+    const { error: delSongsErr } = await supabase.from("setlist_songs").delete().eq("setlist_id", setlistId);
+    if (delSongsErr) return { ok: false, message: delSongsErr.message };
+
+    const songRows = songIdsOrdered.songIds.map((songId, index) => ({
+      setlist_id: setlistId,
+      song_id: songId,
+      order_index: index,
+    }));
+    const { error: insSongsErr } = await supabase.from("setlist_songs").insert(songRows);
+    if (insSongsErr) return { ok: false, message: insSongsErr.message };
+
+    const { error: delLineupErr } = await supabase.from("setlist_lineups").delete().eq("setlist_id", setlistId);
+    if (delLineupErr) return { ok: false, message: delLineupErr.message };
+
+    const lineupRows = buildLineupRows(
+      setlistId,
+      lineup.map((item) => ({ roleCode: item.roleCode, memberIds: item.memberIds })),
+    );
+    if (lineupRows.length > 0) {
+      const { error: insLineupErr } = await supabase.from("setlist_lineups").insert(lineupRows);
+      if (insLineupErr) return { ok: false, message: insLineupErr.message };
+    }
+
+    revalidatePath("/");
+    revalidatePath(`/setlists/${setlistId}`);
     return { ok: true };
   } catch (e) {
     const message = e instanceof Error ? e.message : "알 수 없는 오류가 발생했습니다.";

@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 
+import { EditSetlistDialog } from "@/features/setlist/components/EditSetlistDialog";
 import { StaffNotesEditor } from "@/features/setlist/components/StaffNotesEditor";
+import { TEAM_ROLE_OPTIONS, type TeamRoleCode } from "@/lib/team-roles";
 import { createClient } from "@/utils/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -9,13 +11,17 @@ export default async function SetlistDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { data, error } = await supabase
     .from("setlists")
     .select(
       `
       id,title,event_date,staff_notes,
       setlist_songs(order_index,songs(id,title,youtube_url)),
-      setlist_lineups(role_code,profiles(username))
+      setlist_lineups(role_code,member_id,profiles(username))
     `,
     )
     .eq("id", id)
@@ -23,11 +29,52 @@ export default async function SetlistDetailPage({ params }: { params: Promise<{ 
 
   if (error || !data) notFound();
 
+  let canManageSetlist = false;
+  if (user) {
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+    canManageSetlist = profile?.role === "leader";
+  }
+
+  const { data: membersRaw } = await supabase
+    .from("profiles")
+    .select("id, username")
+    .order("username", { ascending: true });
+  const teamMembers = (membersRaw ?? []) as Array<{ id: string; username: string }>;
+
+  const lineupMap = new Map<TeamRoleCode, string[]>();
+  for (const role of TEAM_ROLE_OPTIONS) lineupMap.set(role.code, []);
+  for (const row of data.setlist_lineups ?? []) {
+    const existing = lineupMap.get(row.role_code as TeamRoleCode) ?? [];
+    lineupMap.set(row.role_code as TeamRoleCode, [...existing, row.member_id]);
+  }
+  const initialLineup = TEAM_ROLE_OPTIONS.map((role) => ({
+    roleCode: role.code,
+    memberIds: lineupMap.get(role.code) ?? [],
+  }));
+  const initialTracks = (data.setlist_songs ?? [])
+    .sort((a, b) => a.order_index - b.order_index)
+    .map((row) => row.songs?.youtube_url ?? "")
+    .filter((url) => !!url);
+
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{data.title}</h1>
-        <p className="text-sm text-muted-foreground">{data.event_date}</p>
+      <header className="space-y-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight">{data.title}</h1>
+            <p className="text-sm text-muted-foreground">{data.event_date}</p>
+          </div>
+          {canManageSetlist ? (
+            <EditSetlistDialog
+              setlistId={data.id}
+              initialTitle={data.title}
+              initialEventDate={data.event_date}
+              initialTracks={initialTracks}
+              initialLineup={initialLineup}
+              members={teamMembers}
+            />
+          ) : null}
+        </div>
       </header>
 
       <section className="space-y-2 rounded-lg border border-border/60 bg-card/60 p-4">

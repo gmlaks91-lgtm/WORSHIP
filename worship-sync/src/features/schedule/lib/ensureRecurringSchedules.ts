@@ -29,7 +29,7 @@ function makeWeeklyDate(base: Date, weekday: number, weekOffset: number, hour: n
 
 export async function ensureRecurringSchedules(supabase: SupabaseClient<Database>) {
   const now = new Date();
-  const rows = RECURRING_TEMPLATES.flatMap((template) =>
+  const candidates = RECURRING_TEMPLATES.flatMap((template) =>
     Array.from({ length: UPCOMING_WEEKS }, (_, weekOffset) => {
       const startsAt = makeWeeklyDate(
         now,
@@ -46,6 +46,19 @@ export async function ensureRecurringSchedules(supabase: SupabaseClient<Database
       };
     }),
   );
+
+  const { data: excludedRows } = await supabase
+    .from("recurring_schedule_exclusions")
+    .select("title, kind, starts_at")
+    .gte("starts_at", now.toISOString());
+
+  const excluded = new Set(
+    (excludedRows ?? []).map((row) => `${row.title}::${row.kind}::${new Date(row.starts_at).toISOString()}`),
+  );
+  const rows = candidates.filter(
+    (row) => !excluded.has(`${row.title}::${row.kind}::${new Date(row.starts_at).toISOString()}`),
+  );
+  if (rows.length === 0) return;
 
   const { error } = await supabase
     .from("schedules")
