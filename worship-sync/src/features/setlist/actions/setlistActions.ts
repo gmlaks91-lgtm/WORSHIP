@@ -99,7 +99,7 @@ export async function createPrepSetlist(raw: CreatePrepSetlistPayload): Promise<
   }
 }
 
-async function resolveTrackSongIds(
+export async function resolveTrackSongIds(
   supabase: Awaited<ReturnType<typeof createClient>>,
   tracks: Array<{ title: string; youtubeUrl: string }>,
 ): Promise<{ ok: true; songIds: string[] } | { ok: false; message: string }> {

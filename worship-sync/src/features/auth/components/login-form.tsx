@@ -10,6 +10,7 @@ import { z } from "zod";
 import { TEAM_ROLE_OPTIONS } from "@/lib/team-roles";
 import { toastError, toastSuccess } from "@/lib/app-toast";
 import { signInWithIdAction, signUpWithIdAction } from "@/features/auth/actions";
+import { sanitizeLoginIdRawInput } from "@/features/auth/login-id-email";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -25,9 +26,13 @@ import { cn } from "@/lib/utils";
 const signInSchema = z.object({
   loginId: z
     .string()
-    .trim()
-    .min(1, "아이디를 입력해 주세요.")
-    .regex(/^[^@\s]+$/, "아이디에는 '@' 또는 공백을 포함할 수 없습니다."),
+    .transform((s) => sanitizeLoginIdRawInput(s))
+    .pipe(
+      z
+        .string()
+        .min(1, "아이디를 입력해 주세요.")
+        .regex(/^[^@\s]+$/, "아이디에는 '@' 또는 공백을 포함할 수 없습니다."),
+    ),
   password: z.string().min(6, "비밀번호는 6자 이상이어야 합니다."),
 });
 
@@ -151,9 +156,6 @@ export function LoginForm({ className }: { className?: string }) {
                 <Field>
                   <FieldLabel>아이디</FieldLabel>
                   <Input placeholder="아이디" autoComplete="username" {...signInForm.register("loginId")} />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    💡 기존 가입자 안내: 사용하시던 이메일 주소의 &apos;@&apos; 앞부분(아이디)만 입력해 주세요.
-                  </p>
                   <FieldError errors={[signInForm.formState.errors.loginId]} />
                 </Field>
                 <Field>
@@ -179,9 +181,6 @@ export function LoginForm({ className }: { className?: string }) {
                 <Field>
                   <FieldLabel>아이디</FieldLabel>
                   <Input placeholder="아이디" autoComplete="username" {...signUpForm.register("loginId")} />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    💡 기존 가입자 안내: 사용하시던 이메일 주소의 &apos;@&apos; 앞부분(아이디)만 입력해 주세요.
-                  </p>
                   <FieldError errors={[signUpForm.formState.errors.loginId]} />
                 </Field>
                 <Field>

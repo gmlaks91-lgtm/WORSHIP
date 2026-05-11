@@ -1,7 +1,10 @@
 ﻿import "server-only";
 
+import { todayYmdKst } from "@/lib/date-kst";
 import type { TeamRoleCode } from "@/types/database";
 import { createClient } from "@/utils/supabase/server";
+
+import { PREP_SETLIST_NESTED_SELECT } from "@/features/setlist/queries/setlist-select";
 
 export type SetlistSongRow = {
   id: string;
@@ -58,6 +61,70 @@ type SetlistQueryRow = {
     | null;
 };
 
+export function mapSetlistQueryRows(rows: SetlistQueryRow[]): PrepSetlistRow[] {
+  return rows.map((row) => {
+    const links = row.setlist_songs ?? [];
+    const songs: SetlistSongRow[] = links
+      .filter((l) => l.songs)
+      .map((l) => ({
+        id: l.songs!.id,
+        title: l.songs!.title,
+        youtube_url: l.songs!.youtube_url,
+        description: l.songs!.description,
+        order_index: l.order_index,
+      }))
+      .sort((a, b) => a.order_index - b.order_index);
+
+    const lineup = (row.setlist_lineups ?? [])
+      .map((line) => ({
+        role_code: line.role_code,
+        member_id: line.member_id,
+        member_name: line.profiles?.username ?? "알 수 없음",
+      }))
+      .sort((a, b) => a.role_code.localeCompare(b.role_code));
+
+    return {
+      id: row.id,
+      title: row.title,
+      event_date: row.event_date,
+      status: row.status as PrepSetlistRow["status"],
+      staff_notes: row.staff_notes ?? null,
+      songs,
+      lineup,
+    };
+  });
+}
+
+/** 가장 가까운 예정 prep 콘티 1건 (한국 날짜 기준 event_date ≥ 오늘, 가장 빠른 일정). */
+export async function getNextPrepSetlist(): Promise<{
+  setlist: PrepSetlistRow | null;
+  error: string | null;
+}> {
+  try {
+    const supabase = await createClient();
+    const today = todayYmdKst();
+
+    const { data: setlistsRaw, error: setlistError } = await supabase
+      .from("setlists")
+      .select(PREP_SETLIST_NESTED_SELECT)
+      .eq("status", "prep")
+      .gte("event_date", today)
+      .order("event_date", { ascending: true })
+      .limit(1);
+
+    if (setlistError) {
+      return { setlist: null, error: setlistError.message };
+    }
+
+    const rows = (setlistsRaw ?? []) as SetlistQueryRow[];
+    const mapped = mapSetlistQueryRows(rows);
+    return { setlist: mapped[0] ?? null, error: null };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "알 수 없는 오류";
+    return { setlist: null, error: message };
+  }
+}
+
 export async function getSetlists(options?: { limit?: number }): Promise<GetSetlistsResult> {
   const limit = options?.limit ?? 10;
   try {
@@ -65,29 +132,7 @@ export async function getSetlists(options?: { limit?: number }): Promise<GetSetl
 
     const { data: setlistsRaw, error: setlistError } = await supabase
       .from("setlists")
-      .select(
-        `
-        id,
-        title,
-        event_date,
-        status,
-        staff_notes,
-        setlist_songs (
-          order_index,
-          songs (
-            id,
-            title,
-            youtube_url,
-            description
-          )
-        ),
-        setlist_lineups (
-          role_code,
-          member_id,
-          profiles ( username )
-        )
-      `,
-      )
+      .select(PREP_SETLIST_NESTED_SELECT)
       .eq("status", "prep")
       .order("event_date", { ascending: false })
       .limit(limit);
@@ -97,43 +142,9 @@ export async function getSetlists(options?: { limit?: number }): Promise<GetSetl
     }
 
     const rows = (setlistsRaw ?? []) as SetlistQueryRow[];
-
-    const setlists: PrepSetlistRow[] = rows.map((row) => {
-      const links = row.setlist_songs ?? [];
-      const songs: SetlistSongRow[] = links
-        .filter((l) => l.songs)
-        .map((l) => ({
-          id: l.songs!.id,
-          title: l.songs!.title,
-          youtube_url: l.songs!.youtube_url,
-          description: l.songs!.description,
-          order_index: l.order_index,
-        }))
-        .sort((a, b) => a.order_index - b.order_index);
-
-      const lineup = (row.setlist_lineups ?? [])
-        .map((line) => ({
-          role_code: line.role_code,
-          member_id: line.member_id,
-          member_name: line.profiles?.username ?? "알 수 없음",
-        }))
-        .sort((a, b) => a.role_code.localeCompare(b.role_code));
-
-      return {
-        id: row.id,
-        title: row.title,
-        event_date: row.event_date,
-        status: row.status as PrepSetlistRow["status"],
-        staff_notes: row.staff_notes ?? null,
-        songs,
-        lineup,
-      };
-    });
-
-    return { setlists, error: null };
+    return { setlists: mapSetlistQueryRows(rows), error: null };
   } catch (e) {
     const message = e instanceof Error ? e.message : "알 수 없는 오류";
     return { setlists: [], error: message };
   }
 }
-
