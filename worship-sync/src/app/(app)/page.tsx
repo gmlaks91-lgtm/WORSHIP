@@ -2,16 +2,22 @@
 import { getPersonalDashboardData } from "@/features/dashboard/queries/getPersonalDashboardData";
 import { WeeklySetlistHero } from "@/features/setlist/components/WeeklySetlistHero";
 import { getRecentSongWarningByVideoId } from "@/features/setlist/queries/getSongUsageStats";
-import { getNextPrepSetlist } from "@/features/setlist/queries/getSetlists";
+import { getPrepSetlistForWeekSunday } from "@/features/setlist/queries/getSetlists";
 import type { PrepSetlistWithSheets } from "@/features/setlist/types";
 import { LastWorshipVideoSection } from "@/features/team-settings/components/LastWorshipVideoSection";
 import { getLatestSheetsBySongIds } from "@/features/sheets/queries/getSheets";
 import type { TeamMemberRow } from "@/features/team/queries/getTeamMembers";
+import { isYmdKst, nextOrSameSundayYmdKst, sundayOfKstWeekContaining, todayYmdKst } from "@/lib/date-kst";
 import { createClient } from "@/utils/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function AhavaDashboardPage() {
+export default async function AhavaDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sunday?: string }>;
+}) {
+  const sp = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -31,8 +37,13 @@ export default async function AhavaDashboardPage() {
     teamMembers = (members ?? []) as TeamMemberRow[];
   }
 
+  const today = todayYmdKst();
+  const defaultSunday = nextOrSameSundayYmdKst(today);
+  const rawSunday = isYmdKst(sp.sunday) ? sp.sunday : defaultSunday;
+  const weekSundayYmd = sundayOfKstWeekContaining(rawSunday);
+
   const [{ setlist, error: setlistError }, dashboardData] = await Promise.all([
-    getNextPrepSetlist(),
+    getPrepSetlistForWeekSunday(weekSundayYmd),
     getPersonalDashboardData(),
   ]);
   const recentSongWarningByVideoId = canManageSetlists ? await getRecentSongWarningByVideoId() : {};
@@ -52,7 +63,8 @@ export default async function AhavaDashboardPage() {
   return (
     <div className="flex flex-1 flex-col gap-12">
       <WeeklySetlistHero
-        key={weeklyWithSheets?.id ?? "no-weekly-setlist"}
+        key={weekSundayYmd}
+        weekSundayYmd={weekSundayYmd}
         setlist={weeklyWithSheets}
         error={setlistError}
         canManageSetlists={canManageSetlists}

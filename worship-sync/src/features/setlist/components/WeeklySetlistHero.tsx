@@ -5,19 +5,22 @@ import { ko } from "date-fns/locale";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import { Loader2, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
 
 import { appendTrackToPrepSetlist, updatePrepSetlistHeader } from "@/features/setlist/actions/weeklySetlistActions";
 import { AddSetlistTriggerButton } from "@/features/setlist/components/AddSetlistDialog";
 import { SetlistLineupEditor } from "@/features/setlist/components/SetlistLineupEditor";
 import { YouTubePlayer } from "@/features/setlist/components/YouTubePlayer";
 import { WeeklySongRow } from "@/features/setlist/components/WeeklySongRow";
+import { weekRangeLineKst, weekSetlistHeadingKst } from "@/features/setlist/lib/week-label-kst";
 import type { PrepSetlistWithSheets } from "@/features/setlist/types";
 import type { TeamMemberRow } from "@/features/team/queries/getTeamMembers";
+import { addDaysYmdKst } from "@/lib/date-kst";
 import { TEAM_ROLE_OPTIONS, teamRoleLabel } from "@/lib/team-roles";
 import { toastError, toastSuccess } from "@/lib/app-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 function groupLineupItems(items: Array<{ role_code: string; member_name: string }>) {
   const map = new Map<string, string[]>();
@@ -30,6 +33,7 @@ function groupLineupItems(items: Array<{ role_code: string; member_name: string 
 }
 
 type WeeklySetlistHeroProps = {
+  weekSundayYmd: string;
   setlist: PrepSetlistWithSheets | null;
   error: string | null;
   canManageSetlists: boolean;
@@ -38,6 +42,7 @@ type WeeklySetlistHeroProps = {
 };
 
 export function WeeklySetlistHero({
+  weekSundayYmd,
   setlist,
   error,
   canManageSetlists,
@@ -46,6 +51,7 @@ export function WeeklySetlistHero({
 }: WeeklySetlistHeroProps) {
   const router = useRouter();
   const [pending, start] = useTransition();
+  const [navPending, startNav] = useTransition();
   const [listTitle, setListTitle] = useState(() => setlist?.title ?? "");
   const [eventDate, setEventDate] = useState(() => setlist?.event_date ?? "");
   const [newTitle, setNewTitle] = useState("");
@@ -73,6 +79,17 @@ export function WeeklySetlistHero({
     });
   };
 
+  const weekTitle = weekSetlistHeadingKst(weekSundayYmd);
+  const weekRange = weekRangeLineKst(weekSundayYmd);
+  const prevWeekHref = `/?sunday=${addDaysYmdKst(weekSundayYmd, -7)}`;
+  const nextWeekHref = `/?sunday=${addDaysYmdKst(weekSundayYmd, 7)}`;
+
+  const goWeek = (href: string) => {
+    startNav(() => {
+      router.push(href);
+    });
+  };
+
   const appendSong = () => {
     if (!setlist) return;
     start(async () => {
@@ -93,24 +110,53 @@ export function WeeklySetlistHero({
 
   return (
     <section id="weekly-setlist" className="scroll-mt-6 space-y-6">
-      <div className="rounded-2xl border border-neutral-200 bg-white px-5 py-8 sm:px-10 sm:py-10">
-        <div className="flex flex-col gap-6 border-b border-neutral-100 pb-8 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Weekly</p>
-            <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">이 주의 송리스트</h1>
-            <p className="max-w-xl text-sm leading-relaxed text-neutral-500">
-              가장 가까운 예배 일정 기준 송리스트입니다. 곡과 악보를 이 화면에서 바로 다듬을 수 있어요.
-            </p>
+      <div
+        className={cn(
+          "rounded-2xl border border-neutral-200 bg-white px-5 py-8 transition-opacity duration-200 sm:px-10 sm:py-10",
+          navPending && "pointer-events-none opacity-60",
+        )}
+      >
+        <div className="flex flex-col gap-8 border-b border-neutral-100 pb-8">
+          <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:gap-6">
+            <button
+              type="button"
+              aria-label="이전 주"
+              disabled={navPending}
+              onClick={() => goWeek(prevWeekHref)}
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center self-center rounded-full border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50"
+            >
+              <ChevronLeft className="size-5" aria-hidden />
+            </button>
+            <div className="min-w-0 flex-1 text-center sm:px-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Weekly</p>
+              <h1 className="mt-1 text-xl font-semibold tracking-tight text-neutral-900 sm:text-2xl">{weekTitle}</h1>
+              <p className="mt-1 text-xs text-neutral-500">{weekRange}</p>
+            </div>
+            <button
+              type="button"
+              aria-label="다음 주"
+              disabled={navPending}
+              onClick={() => goWeek(nextWeekHref)}
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center self-center rounded-full border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50"
+            >
+              <ChevronRight className="size-5" aria-hidden />
+            </button>
           </div>
-          {canManageSetlists ? (
-            <AddSetlistTriggerButton
-              variant="outline"
-              size="sm"
-              className="h-10 shrink-0 border-neutral-300 text-neutral-800 shadow-none"
-              teamMembers={teamMembers.map((m) => ({ id: m.id, username: m.username }))}
-              recentSongWarningByVideoId={recentSongWarningByVideoId}
-            />
-          ) : null}
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-xl text-center text-sm leading-relaxed text-neutral-500 sm:text-left">
+              주간 단위로 송리스트를 넘겨 보며, 곡과 악보를 이 화면에서 바로 다듬을 수 있어요.
+            </p>
+            {canManageSetlists ? (
+              <AddSetlistTriggerButton
+                variant="outline"
+                size="sm"
+                className="h-10 shrink-0 self-center border-neutral-300 text-neutral-800 shadow-none sm:self-auto"
+                teamMembers={teamMembers.map((m) => ({ id: m.id, username: m.username }))}
+                recentSongWarningByVideoId={recentSongWarningByVideoId}
+              />
+            ) : null}
+          </div>
         </div>
 
         {error ? (
@@ -121,9 +167,9 @@ export function WeeklySetlistHero({
 
         {!setlist && !error ? (
           <div className="mt-10 flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-200 bg-neutral-50/50 px-6 py-14 text-center">
-            <p className="text-sm font-medium text-neutral-700">예정된 송리스트가 없습니다.</p>
+            <p className="text-sm font-medium text-neutral-700">이 주차에 등록된 송리스트가 없습니다.</p>
             <p className="mt-2 max-w-md text-sm text-neutral-500">
-              리더가 새 송리스트를 만들면 이곳에 표시됩니다.
+              ({weekRange}) 리더가 콘티를 추가하면 이곳에 표시됩니다.
             </p>
           </div>
         ) : null}

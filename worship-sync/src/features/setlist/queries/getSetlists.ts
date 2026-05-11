@@ -1,6 +1,6 @@
 ﻿import "server-only";
 
-import { todayYmdKst } from "@/lib/date-kst";
+import { saturdayOfWeekFromSundayYmd, todayYmdKst } from "@/lib/date-kst";
 import type { TeamRoleCode } from "@/types/database";
 import { createClient } from "@/utils/supabase/server";
 
@@ -109,6 +109,40 @@ export async function getNextPrepSetlist(): Promise<{
       .select(PREP_SETLIST_NESTED_SELECT)
       .eq("status", "prep")
       .gte("event_date", today)
+      .order("event_date", { ascending: true })
+      .limit(1);
+
+    if (setlistError) {
+      return { setlist: null, error: setlistError.message };
+    }
+
+    const rows = (setlistsRaw ?? []) as SetlistQueryRow[];
+    const mapped = mapSetlistQueryRows(rows);
+    return { setlist: mapped[0] ?? null, error: null };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "알 수 없는 오류";
+    return { setlist: null, error: message };
+  }
+}
+
+/**
+ * KST 기준 `weekSundayYmd`(일요일)~토요일 안에 `event_date`가 들어가는 prep 콘티 1건.
+ * (해당 주에 여러 개면 가장 이른 event_date)
+ */
+export async function getPrepSetlistForWeekSunday(weekSundayYmd: string): Promise<{
+  setlist: PrepSetlistRow | null;
+  error: string | null;
+}> {
+  try {
+    const supabase = await createClient();
+    const weekEnd = saturdayOfWeekFromSundayYmd(weekSundayYmd);
+
+    const { data: setlistsRaw, error: setlistError } = await supabase
+      .from("setlists")
+      .select(PREP_SETLIST_NESTED_SELECT)
+      .eq("status", "prep")
+      .gte("event_date", weekSundayYmd)
+      .lte("event_date", weekEnd)
       .order("event_date", { ascending: true })
       .limit(1);
 
