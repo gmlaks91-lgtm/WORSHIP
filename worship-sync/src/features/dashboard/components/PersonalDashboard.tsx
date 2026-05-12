@@ -150,9 +150,9 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <ListMusic className="size-4 text-muted-foreground" aria-hidden />
-                <CardTitle className="text-base font-semibold">최근 이 주의 콘티</CardTitle>
+                <CardTitle className="text-base font-semibold">최근 prep 콘티</CardTitle>
               </div>
-              <CardDescription>prep 상태 콘티가 최신 순으로 표시됩니다.</CardDescription>
+              <CardDescription>준비 중인 콘티가 최신 일정 순으로 표시됩니다.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {data.recentSetlists.length === 0 ? (
@@ -162,7 +162,7 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
                   {data.recentSetlists.map((list) => (
                     <li key={list.id}>
                       <Link
-                        href="/#prep-setlists"
+                        href="/#weekly-setlist"
                         className="block rounded-lg border border-border/60 bg-muted/15 px-4 py-3 transition-colors hover:bg-muted/30"
                       >
                         <p className="truncate text-sm font-medium">{list.title}</p>
@@ -175,13 +175,13 @@ export function PersonalDashboard({ data }: { data: PersonalDashboardData }) {
                 </ul>
               )}
               <Link
-                href="/#prep-setlists"
+                href="/#weekly-setlist"
                 className={cn(
                   buttonVariants({ variant: "ghost", size: "sm" }),
                   "w-full text-muted-foreground",
                 )}
               >
-                아래 콘티 섹션으로 이동
+                이 주의 송리스트로 이동
               </Link>
             </CardContent>
           </Card>

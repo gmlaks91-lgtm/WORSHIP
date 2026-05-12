@@ -4,19 +4,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/utils/supabase/server";
-
-function toVirtualEmail(loginId: string) {
-  const normalizedId = loginId.trim().split("@")[0]?.toLowerCase() ?? "";
-  if (!normalizedId) {
-    throw new Error("아이디를 입력해 주세요.");
-  }
-  return `${normalizedId}@ahaba.app`;
-}
+import { loginIdToSupabaseEmail } from "@/features/auth/login-id-email";
 
 export async function signInWithIdAction(input: { loginId: string; password: string }) {
   const supabase = await createClient();
 
-  const email = toVirtualEmail(input.loginId);
+  const email = loginIdToSupabaseEmail(input.loginId);
+  console.log("로그인 시도 이메일:", email);
   const { error } = await supabase.auth.signInWithPassword({
     email,
     password: input.password,
@@ -35,7 +29,7 @@ export async function signUpWithIdAction(input: {
   rolePriority3?: string;
 }) {
   const supabase = await createClient();
-  const email = toVirtualEmail(input.loginId);
+  const email = loginIdToSupabaseEmail(input.loginId);
 
   const { error } = await supabase.auth.signUp({
     email,
