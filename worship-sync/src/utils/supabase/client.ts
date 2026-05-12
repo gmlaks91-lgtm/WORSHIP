@@ -1,6 +1,7 @@
 import { createBrowserClient } from "@supabase/ssr";
 
 import type { Database } from "@/types/database";
+import { fetchWithTimeout } from "@/utils/supabase/fetch-with-timeout";
 
 export function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -13,6 +14,9 @@ export function createClient() {
   }
 
   return createBrowserClient<Database>(url, key, {
+    global: {
+      fetch: fetchWithTimeout,
+    },
     auth: {
       flowType: "pkce",
       detectSessionInUrl: true,

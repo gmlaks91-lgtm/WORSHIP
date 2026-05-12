@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 import type { Database } from "@/types/database";
+import { fetchWithTimeout } from "@/utils/supabase/fetch-with-timeout";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -34,6 +35,9 @@ export async function GET(request: Request) {
   }> = [];
   const cookieStore = await cookies();
   const supabase = createServerClient<Database>(url, key, {
+    global: {
+      fetch: fetchWithTimeout,
+    },
     auth: {
       flowType: "pkce",
       detectSessionInUrl: false,

@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 import type { Database } from "@/types/database";
+import { fetchWithTimeout } from "@/utils/supabase/fetch-with-timeout";
 
 export async function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,6 +17,9 @@ export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(url, key, {
+    global: {
+      fetch: fetchWithTimeout,
+    },
     auth: {
       flowType: "pkce",
       detectSessionInUrl: false,

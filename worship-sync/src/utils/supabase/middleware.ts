@@ -3,6 +3,7 @@ import type { User } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 
 import type { Database } from "@/types/database";
+import { fetchWithTimeout } from "@/utils/supabase/fetch-with-timeout";
 
 export type SessionUpdateResult = {
   response: NextResponse;
@@ -27,6 +28,9 @@ export async function updateSession(request: NextRequest): Promise<SessionUpdate
   }
 
   const supabase = createServerClient<Database>(url, key, {
+    global: {
+      fetch: fetchWithTimeout,
+    },
     auth: {
       flowType: "pkce",
       detectSessionInUrl: false,
@@ -51,9 +55,17 @@ export async function updateSession(request: NextRequest): Promise<SessionUpdate
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const userRes = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Supabase auth timeout")), 4000),
+      ),
+    ]);
 
-  return { response: supabaseResponse, user, authConfigured: true };
+    return { response: supabaseResponse, user: userRes.data.user, authConfigured: true };
+  } catch {
+    // 인증 서버가 느리거나 접근 불가할 때 미들웨어가 전체 렌더를 멈추지 않도록 안전하게 통과
+    return { response: supabaseResponse, user: null, authConfigured: false };
+  }
 }

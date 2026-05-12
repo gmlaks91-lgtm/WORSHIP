@@ -9,6 +9,8 @@ import { TEAM_ROLE_OPTIONS, teamRoleLabel } from "@/lib/team-roles";
 import { toastError, toastPromise } from "@/lib/app-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 type TeamManagementSectionProps = {
   members: TeamManagementMember[];
@@ -121,27 +123,30 @@ export function TeamManagementSection({ members, isLeader, currentUserId }: Team
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {isLeader ? (
-        <Card className="border-border/70 shadow-sm ring-1 ring-border/30">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">리더 관리 요약</CardTitle>
+        <Card className="border-neutral-200/60 bg-white/50 shadow-sm backdrop-blur-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base text-neutral-900">리더 관리 요약</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-3 text-sm sm:grid-cols-3">
-            <p>
-              <span className="text-muted-foreground">전체 멤버</span> · {counts.total}명
-            </p>
-            <p>
-              <span className="text-muted-foreground">가입 완료</span> · {counts.joined}명
-            </p>
-            <p>
-              <span className="text-muted-foreground">가입 대기/미완료</span> · {counts.waiting}명
-            </p>
+          <CardContent className="grid gap-4 text-sm sm:grid-cols-3">
+            <div className="rounded-lg bg-neutral-50 px-3 py-2.5">
+              <p className="text-xs font-medium text-neutral-500 mb-1">전체 멤버</p>
+              <p className="text-lg font-semibold text-neutral-900">{counts.total}명</p>
+            </div>
+            <div className="rounded-lg bg-green-50 px-3 py-2.5">
+              <p className="text-xs font-medium text-green-600 mb-1">가입 완료</p>
+              <p className="text-lg font-semibold text-green-900">{counts.joined}명</p>
+            </div>
+            <div className="rounded-lg bg-amber-50 px-3 py-2.5">
+              <p className="text-xs font-medium text-amber-600 mb-1">가입 대기</p>
+              <p className="text-lg font-semibold text-amber-900">{counts.waiting}명</p>
+            </div>
           </CardContent>
         </Card>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {members.map((member) => {
           const roleText = [
             member.role_priority_1 ? teamRoleLabel(member.role_priority_1) : null,
@@ -152,75 +157,135 @@ export function TeamManagementSection({ members, isLeader, currentUserId }: Team
             .join(" / ");
 
           const draft = drafts[member.id] ?? { rolePriority1: "", rolePriority2: "", rolePriority3: "" };
+          const isWaiting = !member.email_confirmed_at;
+          const isActive = member.email_confirmed_at && member.hasProfile;
 
           return (
-            <Card key={member.id} className="border-border/70">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">{member.username}</CardTitle>
+            <Card
+              key={member.id}
+              className="group relative border-neutral-100 bg-white/70 shadow-sm transition-all hover:shadow-md hover:border-neutral-200 backdrop-blur-sm overflow-hidden"
+            >
+              {/* Status indicator */}
+              <div className="absolute top-0 right-0 w-2 h-2">
+                {isActive && (
+                  <div className="w-full h-full bg-green-400 rounded-bl-lg"></div>
+                )}
+                {isWaiting && (
+                  <div className="w-full h-full bg-amber-300 rounded-bl-lg"></div>
+                )}
+              </div>
+
+              {/* Avatar and basic info */}
+              <CardHeader className="pb-3 flex flex-col items-center text-center">
+                <Avatar size="lg" className="mb-3 shadow-sm">
+                  <AvatarImage src={member.avatar_url ?? ""} alt={member.username} />
+                  <AvatarFallback className="bg-neutral-100 text-neutral-600 font-semibold">
+                    {member.username.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <CardTitle className="text-base text-neutral-900">{member.username}</CardTitle>
+                <p className="text-xs text-neutral-500 mt-1">
+                  {member.role === "leader" ? "리더" : "팀원"}
+                </p>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <p>
-                  <span className="text-muted-foreground">권한</span> · {member.role === "leader" ? "리더" : "팀원"}
-                </p>
-                <p>
-                  <span className="text-muted-foreground">가입 현황</span> · {signupStatus(member)}
-                </p>
-                <p>
-                  <span className="text-muted-foreground">가입일</span> · {formatDate(member.created_at)}
-                </p>
-                <p className="truncate">
-                  <span className="text-muted-foreground">이메일</span> · {member.email ?? "정보 없음"}
-                </p>
-                <p>
-                  <span className="text-muted-foreground">현재 포지션</span> · {roleText || "미정"}
-                </p>
 
+              <CardContent className="space-y-3 text-sm">
+                {/* Roles */}
+                {roleText && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium text-neutral-600">포지션</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {member.role_priority_1 && (
+                        <Badge
+                          variant="secondary"
+                          className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-0"
+                        >
+                          {teamRoleLabel(member.role_priority_1)}
+                        </Badge>
+                      )}
+                      {member.role_priority_2 && (
+                        <Badge
+                          variant="secondary"
+                          className="bg-purple-50 text-purple-700 hover:bg-purple-100 border-0"
+                        >
+                          {teamRoleLabel(member.role_priority_2)}
+                        </Badge>
+                      )}
+                      {member.role_priority_3 && (
+                        <Badge
+                          variant="secondary"
+                          className="bg-pink-50 text-pink-700 hover:bg-pink-100 border-0"
+                        >
+                          {teamRoleLabel(member.role_priority_3)}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Status */}
+                <div className="space-y-1">
+                  <p className="text-xs text-neutral-500">
+                    {isActive && <span className="text-green-600 font-medium">✓ 가입 완료</span>}
+                    {isWaiting && <span className="text-amber-600 font-medium">⧖ 가입 대기</span>}
+                  </p>
+                </div>
+
+                {/* Leader controls */}
                 {isLeader ? (
-                  <div className="space-y-2 rounded-lg border border-border/60 bg-muted/20 p-3">
-                    <p className="text-xs font-medium text-muted-foreground">포지션 수정</p>
-                    <select
-                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
-                      value={draft.rolePriority1}
-                      onChange={(e) => onRoleChange(member.id, "rolePriority1", e.target.value)}
-                      disabled={pending}
-                    >
-                      <option value="">역할 1순위 없음</option>
-                      {TEAM_ROLE_OPTIONS.map((role) => (
-                        <option key={`p1-${role.code}`} value={role.code}>
-                          {role.label}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
-                      value={draft.rolePriority2}
-                      onChange={(e) => onRoleChange(member.id, "rolePriority2", e.target.value)}
-                      disabled={pending}
-                    >
-                      <option value="">역할 2순위 없음</option>
-                      {TEAM_ROLE_OPTIONS.map((role) => (
-                        <option key={`p2-${role.code}`} value={role.code}>
-                          {role.label}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
-                      value={draft.rolePriority3}
-                      onChange={(e) => onRoleChange(member.id, "rolePriority3", e.target.value)}
-                      disabled={pending}
-                    >
-                      <option value="">역할 3순위 없음</option>
-                      {TEAM_ROLE_OPTIONS.map((role) => (
-                        <option key={`p3-${role.code}`} value={role.code}>
-                          {role.label}
-                        </option>
-                      ))}
-                    </select>
+                  <div className="space-y-2 rounded-lg border border-neutral-150 bg-neutral-50/60 p-3 mt-3">
+                    <p className="text-xs font-medium text-neutral-600">포지션 수정</p>
+                    <div className="space-y-2">
+                      <select
+                        className="h-8 w-full rounded-md border border-neutral-200 bg-white px-2 text-xs outline-none transition-colors focus-visible:border-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-200/50 disabled:opacity-50"
+                        value={draft.rolePriority1}
+                        onChange={(e) => onRoleChange(member.id, "rolePriority1", e.target.value)}
+                        disabled={pending}
+                      >
+                        <option value="">1순위 선택</option>
+                        {TEAM_ROLE_OPTIONS.map((role) => (
+                          <option key={`p1-${role.code}`} value={role.code}>
+                            {role.label}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className="h-8 w-full rounded-md border border-neutral-200 bg-white px-2 text-xs outline-none transition-colors focus-visible:border-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-200/50 disabled:opacity-50"
+                        value={draft.rolePriority2}
+                        onChange={(e) => onRoleChange(member.id, "rolePriority2", e.target.value)}
+                        disabled={pending}
+                      >
+                        <option value="">2순위 선택</option>
+                        {TEAM_ROLE_OPTIONS.map((role) => (
+                          <option key={`p2-${role.code}`} value={role.code}>
+                            {role.label}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className="h-8 w-full rounded-md border border-neutral-200 bg-white px-2 text-xs outline-none transition-colors focus-visible:border-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-200/50 disabled:opacity-50"
+                        value={draft.rolePriority3}
+                        onChange={(e) => onRoleChange(member.id, "rolePriority3", e.target.value)}
+                        disabled={pending}
+                      >
+                        <option value="">3순위 선택</option>
+                        {TEAM_ROLE_OPTIONS.map((role) => (
+                          <option key={`p3-${role.code}`} value={role.code}>
+                            {role.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                    <div className="flex gap-2 pt-1">
-                      <Button type="button" size="sm" onClick={() => onSaveRoles(member)} disabled={pending}>
-                        포지션 저장
+                    <div className="flex gap-1.5 pt-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => onSaveRoles(member)}
+                        disabled={pending}
+                        className="flex-1 h-8 text-xs bg-neutral-900 hover:bg-neutral-800 text-white"
+                      >
+                        저장
                       </Button>
                       <Button
                         type="button"
@@ -228,8 +293,9 @@ export function TeamManagementSection({ members, isLeader, currentUserId }: Team
                         size="sm"
                         onClick={() => onDeleteMember(member)}
                         disabled={pending || deleteTargetId === member.id || member.id === currentUserId}
+                        className="flex-1 h-8 text-xs"
                       >
-                        {deleteTargetId === member.id ? "삭제 중..." : "강제 퇴장"}
+                        {deleteTargetId === member.id ? "삭제 중..." : "삭제"}
                       </Button>
                     </div>
                   </div>
