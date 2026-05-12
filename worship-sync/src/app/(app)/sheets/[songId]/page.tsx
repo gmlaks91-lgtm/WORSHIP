@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { SheetViewerScaffold } from "@/features/sheets/components/SheetViewerScaffold";
 import { getLatestSheetForSong } from "@/features/sheets/queries/getSheets";
+import { getSheetWithRevisions } from "@/features/sheets/queries/getSheetRevisions";
 import { createClient } from "@/utils/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,9 @@ export default async function SheetForSongPage({
     notFound();
   }
 
+  // 수정 이력 조회
+  const { revisions } = await getSheetWithRevisions(sheet.id);
+
   return (
     <SheetViewerScaffold
       mode="page"
@@ -32,6 +36,10 @@ export default async function SheetForSongPage({
       songTitle={song.title}
       fileUrls={sheet.image_urls}
       memo={sheet.memo}
+      sheetId={sheet.id}
+      chords={sheet.chords}
+      songStructure={sheet.song_structure}
+      revisions={revisions}
     />
   );
 }
